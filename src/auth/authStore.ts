@@ -17,9 +17,7 @@ interface AuthState {
 
 // Typed set/get helpers for Zustand to avoid implicit any
 type SetFn = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>)) => void;
-type GetFn = () => AuthState;
-
-export const useAuthStore = create<AuthState>((set: SetFn, get: GetFn) => ({
+export const useAuthStore = create<AuthState>((set: SetFn) => ({
   user: null,
   loading: false,
   remember: false,
@@ -31,7 +29,7 @@ export const useAuthStore = create<AuthState>((set: SetFn, get: GetFn) => ({
         const u = JSON.parse(raw) as UserProfile;
         set({ user: u, remember: true });
       }
-    } catch (e) {
+    } catch {
       // ignore
     } finally {
       set({ loading: false });
@@ -55,7 +53,7 @@ export const useAuthStore = create<AuthState>((set: SetFn, get: GetFn) => ({
     set({ user: null, remember: false });
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {}
+    } catch {}
   },
   sendReset: async (email: string) => {
     set({ loading: true });

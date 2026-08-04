@@ -66,7 +66,7 @@ export async function sendResetEmail(email: string): Promise<boolean> {
   return !!findUserByEmail(email);
 }
 
-export async function resetPassword(token: string, newPassword: string): Promise<boolean> {
+export async function resetPassword(_token: string, _newPassword: string): Promise<boolean> {
   // token ignored in mock — always succeed
   await new Promise((r) => setTimeout(r, 300));
   return true;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useAuthStore } from './authStore';
 import { UserProfile } from './types';
 
@@ -21,12 +21,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sendReset = useAuthStore((s) => s.sendReset);
   const resetPassword = useAuthStore((s) => s.resetPassword);
   const init = useAuthStore((s) => s.init);
-  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     (async () => {
       await init();
-      setInitialized(true);
     })();
   }, [init]);
 
