@@ -1,9 +1,10 @@
 import React from 'react';
-import { mockRepository } from '../services/mockRepository';
 import type { DataEntity, SortDirection } from '../types/admin';
 import useDebouncedValue from './useDebouncedValue';
+import { useRepository } from '../repositories/RepositoryProvider';
 
 export default function useResourceCollection(resourceKey: string) {
+  const repository = useRepository();
   const [query, setQuery] = React.useState('');
   const [status, setStatus] = React.useState('all');
   const [rows, setRows] = React.useState<DataEntity[]>([]);
@@ -26,7 +27,7 @@ export default function useResourceCollection(resourceKey: string) {
     setLoading(true);
     setError(null);
     try {
-      const data = await mockRepository.list(resourceKey, {
+      const data = await repository.list(resourceKey, {
         query: debouncedQuery,
         status,
         page,
@@ -43,7 +44,7 @@ export default function useResourceCollection(resourceKey: string) {
     } finally {
       setLoading(false);
     }
-  }, [debouncedQuery, page, pageSize, resourceKey, sortDirection, sortKey, status]);
+  }, [debouncedQuery, page, pageSize, repository, resourceKey, sortDirection, sortKey, status]);
 
   React.useEffect(() => {
     void refresh();
@@ -52,41 +53,41 @@ export default function useResourceCollection(resourceKey: string) {
   const remove = React.useCallback(
     async (ids: string[]) => {
       setActionLoading(true);
-      await mockRepository.remove(resourceKey, ids);
+      await repository.delete(resourceKey, ids);
       await refresh();
       setActionLoading(false);
     },
-    [refresh, resourceKey]
+    [refresh, repository, resourceKey]
   );
 
   const duplicate = React.useCallback(
     async (id: string) => {
       setActionLoading(true);
-      await mockRepository.duplicate(resourceKey, id);
+      await repository.duplicate(resourceKey, id);
       await refresh();
       setActionLoading(false);
     },
-    [refresh, resourceKey]
+    [refresh, repository, resourceKey]
   );
 
   const archive = React.useCallback(
     async (ids: string[]) => {
       setActionLoading(true);
-      await mockRepository.archive(resourceKey, ids);
+      await repository.archive(resourceKey, ids);
       await refresh();
       setActionLoading(false);
     },
-    [refresh, resourceKey]
+    [refresh, repository, resourceKey]
   );
 
   const restore = React.useCallback(
     async (ids: string[]) => {
       setActionLoading(true);
-      await mockRepository.restore(resourceKey, ids);
+      await repository.restore(resourceKey, ids);
       await refresh();
       setActionLoading(false);
     },
-    [refresh, resourceKey]
+    [refresh, repository, resourceKey]
   );
 
   const setSort = React.useCallback((key: keyof DataEntity) => {

@@ -11,7 +11,6 @@ import LoadingSkeleton from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 import useResourceItem from '../hooks/useResourceItem';
 import { useToast } from '../providers/ToastProvider';
-import { mockRepository } from '../services/mockRepository';
 import type { DataEntity, FormFieldConfig, ResourceConfig } from '../types/admin';
 
 export default function ResourceFormPage({
@@ -24,7 +23,10 @@ export default function ResourceFormPage({
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { item, loading, error } = useResourceItem(config.key, mode === 'edit' ? id : undefined);
+  const { item, loading, error, save } = useResourceItem(
+    config.key,
+    mode === 'edit' ? id : undefined
+  );
   const [values, setValues] = React.useState<FormValues>(() => createInitialValues(config));
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [saving, setSaving] = React.useState(false);
@@ -75,7 +77,7 @@ export default function ResourceFormPage({
         createdAt: item?.createdAt ?? '2026-08-04',
         updatedAt: '2026-08-04',
       };
-      await mockRepository.save(config.key, entity);
+      await save(entity);
       setSuccess(true);
       toast.push('Record saved successfully.', 'success');
       window.setTimeout(() => navigate(config.basePath), 450);

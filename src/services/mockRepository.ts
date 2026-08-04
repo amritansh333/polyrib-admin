@@ -1,5 +1,10 @@
 import { mockData, resources } from './mockData';
 import type { DataEntity, SortDirection } from '../types/admin';
+import type {
+  ResourceListParams,
+  ResourceListResult,
+  ResourceRepository,
+} from '../repositories/types';
 
 const STORAGE_KEY = 'polyrib_admin_mock_repository_v1';
 
@@ -39,8 +44,10 @@ function delay<T>(value: T): Promise<T> {
   });
 }
 
-export const mockRepository = {
-  async list(resourceKey: string, params: ListParams = {}) {
+export const mockRepository: ResourceRepository = {
+  source: 'mock',
+
+  async list(resourceKey: string, params: ResourceListParams = {}): Promise<ResourceListResult> {
     const store = cloneStore();
     const query = params.query?.trim().toLowerCase();
     const status = params.status;
@@ -84,31 +91,20 @@ export const mockRepository = {
     });
   },
 
-  async find(resourceKey: string, id: string) {
+  async get(resourceKey: string, id: string) {
     const store = cloneStore();
     return delay((store[resourceKey] ?? []).find((row) => row.id === id) ?? null);
   },
 
-  async save(resourceKey: string, entity: DataEntity) {
-    const store = cloneStore();
-    const rows = store[resourceKey] ?? [];
-    const index = rows.findIndex((row) => row.id === entity.id);
-    const nextEntity = {
-      ...entity,
-      id: entity.id || createId(resourceKey),
-      updatedAt: today(),
-      createdAt: entity.createdAt || today(),
-    };
-    const nextRows =
-      index >= 0
-        ? rows.map((row) => (row.id === entity.id ? nextEntity : row))
-        : [nextEntity, ...rows];
-    store[resourceKey] = nextRows;
-    saveStore(store);
-    return delay(nextEntity);
+  async create(resourceKey: string, entity: DataEntity) {
+    return saveEntity(resourceKey, entity);
   },
 
-  async remove(resourceKey: string, ids: string[]) {
+  async update(resourceKey: string, id: string, entity: DataEntity) {
+    return saveEntity(resourceKey, { ...entity, id });
+  },
+
+  async delete(resourceKey: string, ids: string[]) {
     const store = cloneStore();
     store[resourceKey] = (store[resourceKey] ?? []).filter((row) => !ids.includes(row.id));
     saveStore(store);
@@ -117,7 +113,8 @@ export const mockRepository = {
 
   async duplicate(resourceKey: string, id: string) {
     const store = cloneStore();
-    const row = (store[resourceKey] ?? []).find((item) => item.id === id);
+    const rows = store[resourceKey] ?? [];
+    const row = rows.find((item) => item.id === id);
     if (!row) return delay(null);
     const copy: DataEntity = {
       ...row,
@@ -152,7 +149,7 @@ export const mockRepository = {
     return delay(true);
   },
 
-  async globalSearch(query: string) {
+  async search(query: string) {
     const store = cloneStore();
     const normalized = query.trim().toLowerCase();
     if (!normalized) return delay([]);
@@ -170,7 +167,34 @@ export const mockRepository = {
     );
     return delay(results.slice(0, 12));
   },
+
+  async filter(resourceKey: string, params: ResourceListParams = {}) {
+    return this.list(resourceKey, params);
+  },
+
+  async pagination(resourceKey: string, params: ResourceListParams = {}) {
+    return this.list(resourceKey, params);
+  },
 };
+
+async function saveEntity(resourceKey: string, entity: DataEntity) {
+  const store = cloneStore();
+  const rows = store[resourceKey] ?? [];
+  const index = rows.findIndex((row) => row.id === entity.id);
+  const nextEntity = {
+    ...entity,
+    id: entity.id || createId(resourceKey),
+    updatedAt: today(),
+    createdAt: entity.createdAt || today(),
+  };
+  const nextRows =
+    index >= 0
+      ? rows.map((row) => (row.id === entity.id ? nextEntity : row))
+      : [nextEntity, ...rows];
+  store[resourceKey] = nextRows;
+  saveStore(store);
+  return delay(nextEntity);
+}
 
 function createId(resourceKey: string) {
   return `${resourceKey.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
