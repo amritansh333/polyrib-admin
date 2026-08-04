@@ -1,5 +1,4 @@
-import api from '../lib/api';
-import type { UploadAssetDto } from '../repositories/dto';
+import { MissingBackendApiError } from '../repositories/apiRepository';
 
 export type UploadOptions = {
   resourceKey?: string;
@@ -21,52 +20,15 @@ export type UploadService = {
 };
 
 export const uploadService: UploadService = {
-  async uploadImage(file, options) {
-    return uploadSingle(file, 'images', options);
+  async uploadImage(_file, _options) {
+    throw new MissingBackendApiError('uploadImage', 'uploads');
   },
 
-  async uploadPdf(file, options) {
-    return uploadSingle(file, 'pdfs', options);
+  async uploadPdf(_file, _options) {
+    throw new MissingBackendApiError('uploadPdf', 'uploads');
   },
 
-  async uploadMultipart(files, options) {
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-    if (options?.resourceKey) formData.append('resourceKey', options.resourceKey);
-
-    const response = await api.post<UploadAssetDto[]>('/uploads', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (event) => reportProgress(event.loaded, event.total, options),
-    });
-
-    return response.data.map(toUploadedAsset);
+  async uploadMultipart(_files, _options) {
+    throw new MissingBackendApiError('uploadMultipart', 'uploads');
   },
 };
-
-async function uploadSingle(file: File, type: 'images' | 'pdfs', options?: UploadOptions) {
-  const formData = new FormData();
-  formData.append('file', file);
-  if (options?.resourceKey) formData.append('resourceKey', options.resourceKey);
-
-  const response = await api.post<UploadAssetDto>(`/uploads/${type}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: (event) => reportProgress(event.loaded, event.total, options),
-  });
-
-  return toUploadedAsset(response.data);
-}
-
-function toUploadedAsset(dto: UploadAssetDto): UploadedAsset {
-  return {
-    id: String(dto.id ?? ''),
-    url: dto.url ?? '',
-    name: dto.name ?? '',
-    mimeType: dto.mimeType ?? '',
-    size: dto.size ?? 0,
-  };
-}
-
-function reportProgress(loaded: number, total: number | undefined, options?: UploadOptions) {
-  if (!total || !options?.onUploadProgress) return;
-  options.onUploadProgress(Math.round((loaded / total) * 100));
-}
