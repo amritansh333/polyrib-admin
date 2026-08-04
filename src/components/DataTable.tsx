@@ -1,17 +1,16 @@
-import Table, { type TableColumn } from './Table';
+import ResourceTable, { type ResourceTableColumn } from './ResourceTable';
+import type React from 'react';
 
-export type DataTableColumn<T> = TableColumn<T>;
+export type DataTableColumn<T> = ResourceTableColumn<T>;
 
-export default function DataTable<T>({
+export default function DataTable<T extends { id: string; status?: string }>({
   columns,
   rows,
-  rowKey,
-  empty,
 }: {
   columns: DataTableColumn<T>[];
   rows: T[];
-  rowKey: (row: T) => string;
+  rowKey?: (row: T) => string;
   empty?: React.ReactNode;
 }) {
-  return <Table columns={columns} rows={rows} rowKey={rowKey} empty={empty} />;
+  return <ResourceTable columns={columns} rows={rows} />;
 }

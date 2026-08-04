@@ -10,6 +10,7 @@ export default function StatCard({
   icon,
   trend,
   tone = 'blue',
+  onClick,
 }: {
   label: string;
   value: string;
@@ -17,6 +18,7 @@ export default function StatCard({
   icon?: React.ReactNode;
   trend?: 'up' | 'down';
   tone?: 'blue' | 'green' | 'amber' | 'red' | 'neutral';
+  onClick?: () => void;
 }) {
   const TrendIcon = trend === 'down' ? ArrowDownRight : ArrowUpRight;
   const tones = {
@@ -28,7 +30,13 @@ export default function StatCard({
   };
 
   return (
-    <Card interactive className="relative min-h-36 overflow-hidden p-5">
+    <Card
+      as={onClick ? 'button' : 'div'}
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      interactive
+      className="relative min-h-36 w-full overflow-hidden p-5 text-left"
+    >
       <div className="absolute inset-x-0 top-0 h-0.5 bg-primary" />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">

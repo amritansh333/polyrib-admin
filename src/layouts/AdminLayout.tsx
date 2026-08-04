@@ -8,7 +8,7 @@ const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar collapsed={collapsed} onCollapseChange={setCollapsed} />
 
       <Drawer open={drawerOpen} title="Khanna Polyrib" onClose={() => setDrawerOpen(false)}>
@@ -20,9 +20,9 @@ const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
         />
       </Drawer>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setDrawerOpen(true)} />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto industrial-scrollbar">{children}</main>
       </div>
     </div>
   );

@@ -2,84 +2,17 @@ import React from 'react';
 import {
   BarChart3,
   Bell,
-  BookOpen,
-  Boxes,
   Building2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Database,
-  FileDown,
-  FileText,
-  FolderTree,
-  Gauge,
-  HelpCircle,
-  Image,
-  Layers,
-  Library,
-  LockKeyhole,
-  Package,
   PackageCheck,
-  PenTool,
-  ScrollText,
-  Settings,
   Shield,
-  Tags,
-  UserCog,
-  Users,
-  Wrench,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
-
-type SidebarItem = {
-  label: string;
-  to: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-};
-
-type SidebarSection = {
-  label: string;
-  items: SidebarItem[];
-};
-
-const sidebarSections: SidebarSection[] = [
-  {
-    label: 'Command',
-    items: [{ label: 'Dashboard', to: '/dashboard', icon: Gauge }],
-  },
-  {
-    label: 'Catalog',
-    items: [
-      { label: 'Products', to: '/dashboard/products', icon: Package },
-      { label: 'Categories', to: '/dashboard/categories', icon: FolderTree },
-      { label: 'Brands', to: '/dashboard/brands', icon: Tags },
-      { label: 'Machine Components', to: '/dashboard/machine-components', icon: Wrench },
-      { label: 'Semi Finished Products', to: '/dashboard/semi-finished-products', icon: Boxes },
-      { label: 'Materials', to: '/dashboard/materials', icon: Layers },
-      { label: 'Media Library', to: '/dashboard/media', icon: Image },
-    ],
-  },
-  {
-    label: 'Leads',
-    items: [
-      { label: 'Leads', to: '/dashboard/leads', icon: Users },
-      { label: 'Brochure Downloads', to: '/dashboard/brochure-downloads', icon: FileDown },
-      { label: 'Drawing Requests', to: '/dashboard/drawing-requests', icon: PenTool },
-      { label: 'Quote Requests', to: '/dashboard/quote-requests', icon: FileText },
-    ],
-  },
-  {
-    label: 'Administration',
-    items: [
-      { label: 'Website Content', to: '/dashboard/content', icon: BookOpen },
-      { label: 'Users', to: '/dashboard/users', icon: UserCog },
-      { label: 'Roles & Permissions', to: '/dashboard/roles', icon: LockKeyhole },
-      { label: 'Settings', to: '/dashboard/settings', icon: Settings },
-      { label: 'System Logs', to: '/dashboard/system-logs', icon: ScrollText },
-      { label: 'Support', to: '/dashboard/support', icon: HelpCircle },
-    ],
-  },
-];
+import { sidebarSections, type SidebarItem } from '../constants/navigation';
 
 export default function Sidebar({
   collapsed,
@@ -93,11 +26,25 @@ export default function Sidebar({
   onNavigate?: () => void;
 }) {
   const compact = collapsed && !mobile;
+  const location = useLocation();
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    const nextExpanded: Record<string, boolean> = {};
+    sidebarSections.forEach((section) => {
+      section.items.forEach((item) => {
+        if (item.children?.some((child) => isPathActive(location.pathname, child.to))) {
+          nextExpanded[item.to] = true;
+        }
+      });
+    });
+    setExpanded((current) => ({ ...current, ...nextExpanded }));
+  }, [location.pathname]);
 
   return (
     <aside
       className={clsx(
-        'flex h-screen shrink-0 flex-col border-r border-divider bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] transition-all duration-300',
+        'sticky top-0 flex h-screen shrink-0 flex-col border-r border-divider bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] transition-all duration-300',
         compact ? 'w-20' : 'w-72',
         mobile ? 'h-full w-full border-r-0' : 'hidden lg:flex'
       )}
@@ -122,7 +69,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={() => onCollapseChange(!collapsed)}
-            aria-label="Collapse sidebar"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-charcoal-light transition-colors hover:border-primary hover:text-primary"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -164,35 +111,17 @@ export default function Sidebar({
               )}
               <ul className="space-y-1">
                 {section.items.map((item) => (
-                  <li key={item.label}>
-                    <NavLink
-                      to={item.to}
-                      onClick={onNavigate}
-                      className={({ isActive }) =>
-                        clsx(
-                          'group flex h-10 items-center gap-3 border border-transparent px-3 text-sm font-semibold transition-all duration-200',
-                          compact && 'justify-center px-0',
-                          isActive
-                            ? 'border-primary/20 bg-primary text-primary-foreground shadow-card'
-                            : 'text-charcoal-light hover:border-primary/25 hover:bg-[hsl(var(--sidebar-muted))] hover:text-primary'
-                        )
-                      }
-                      title={compact ? item.label : undefined}
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <item.icon
-                            className={clsx(
-                              'h-4 w-4 shrink-0',
-                              isActive ? 'text-primary-foreground' : 'text-primary'
-                            )}
-                            strokeWidth={1.8}
-                          />
-                          {!compact && <span className="truncate">{item.label}</span>}
-                        </>
-                      )}
-                    </NavLink>
-                  </li>
+                  <SidebarLink
+                    key={item.to}
+                    item={item}
+                    compact={compact}
+                    pathname={location.pathname}
+                    expanded={Boolean(expanded[item.to])}
+                    onToggle={() =>
+                      setExpanded((current) => ({ ...current, [item.to]: !current[item.to] }))
+                    }
+                    onNavigate={onNavigate}
+                  />
                 ))}
               </ul>
             </div>
@@ -204,7 +133,7 @@ export default function Sidebar({
         <div className={clsx('grid gap-2', compact ? 'grid-cols-1' : 'grid-cols-3')}>
           {[
             { label: 'Site', value: 'Live', icon: BarChart3 },
-            { label: 'DB', value: 'OK', icon: Database },
+            { label: 'DB', value: 'Local', icon: Database },
             { label: 'RA', value: 'On', icon: Shield },
           ].map((item) => (
             <div
@@ -234,4 +163,96 @@ export default function Sidebar({
       </div>
     </aside>
   );
+}
+
+function SidebarLink({
+  item,
+  compact,
+  pathname,
+  expanded,
+  onToggle,
+  onNavigate,
+}: {
+  item: SidebarItem;
+  compact: boolean;
+  pathname: string;
+  expanded: boolean;
+  onToggle: () => void;
+  onNavigate?: () => void;
+}) {
+  const hasChildren = Boolean(item.children?.length);
+  const active =
+    isPathActive(pathname, item.to) ||
+    item.children?.some((child) => isPathActive(pathname, child.to));
+
+  return (
+    <li>
+      <div className="relative">
+        <NavLink
+          to={item.to}
+          onClick={onNavigate}
+          className={clsx(
+            'group flex h-10 items-center gap-3 border px-3 text-sm font-semibold transition-all duration-200',
+            compact && 'justify-center px-0',
+            active
+              ? 'border-primary/20 bg-primary text-primary-foreground shadow-card'
+              : 'border-transparent text-charcoal-light hover:border-primary/25 hover:bg-[hsl(var(--sidebar-muted))] hover:text-primary'
+          )}
+          title={compact ? item.label : undefined}
+        >
+          <item.icon
+            className={clsx(
+              'h-4 w-4 shrink-0',
+              active ? 'text-primary-foreground' : 'text-primary'
+            )}
+            strokeWidth={1.8}
+          />
+          {!compact && <span className="truncate pr-7">{item.label}</span>}
+        </NavLink>
+        {hasChildren && !compact && (
+          <button
+            type="button"
+            aria-label={expanded ? `Collapse ${item.label}` : `Expand ${item.label}`}
+            aria-expanded={expanded}
+            onClick={onToggle}
+            className={clsx(
+              'absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center transition-colors',
+              active ? 'text-primary-foreground' : 'text-primary'
+            )}
+          >
+            <ChevronDown
+              className={clsx('h-4 w-4 transition-transform', expanded && 'rotate-180')}
+            />
+          </button>
+        )}
+      </div>
+      {hasChildren && expanded && !compact && (
+        <ul className="ml-4 mt-1 space-y-1 border-l border-divider pl-3">
+          {item.children?.map((child) => (
+            <li key={child.to}>
+              <NavLink
+                to={child.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex h-9 items-center gap-2 border border-transparent px-3 text-xs font-semibold transition-colors',
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-charcoal-light hover:border-primary/25 hover:bg-[hsl(var(--sidebar-muted))] hover:text-primary'
+                  )
+                }
+              >
+                <child.icon className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.8} />
+                <span className="truncate">{child.label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function isPathActive(pathname: string, to: string) {
+  return pathname === to || pathname.startsWith(`${to}/`);
 }
