@@ -25,6 +25,7 @@ const connectedResources = new Set([
   'brands',
   'materials',
   'machine-components',
+  'semi-finished-products',
 ]);
 
 export class MissingBackendApiError extends Error {
@@ -41,6 +42,9 @@ export const apiRepository: ResourceRepository = {
     switch (resourceKey) {
       case 'products':
         return listProducts(params);
+      case 'semi-finished-products':
+        // Use the public products filter with experience=semi_finished to fetch semi-finished division
+        return listProducts({ ...params, experience: 'semi_finished' });
       case 'categories':
         return listSimpleResource('/categories', params);
       case 'brands':
@@ -50,9 +54,18 @@ export const apiRepository: ResourceRepository = {
       case 'machine-components':
         return listMachineComponents(params);
       default:
-        throw new MissingBackendApiError('list', resourceKey);
+        // Attempt generic fetch from backend path matching resourceKey (e.g. /leads, /media-library)
+        try {
+          const path = `/${resourceKey.replaceAll('|','').replaceAll(' ', '-')}`;
+          const response = await api.get(path, { params });
+          return toListResultFromRows(response.data, params as any);
+        } catch (err) {
+          // If backend doesn't expose this resource, return an empty list to allow dashboard to render
+          return { rows: [], total: 0, page: params.page ?? 1, pageSize: params.pageSize ?? params.limit ?? 10 } as any;
+        }
     }
   },
+
 
   async get(resourceKey, id) {
     switch (resourceKey) {
