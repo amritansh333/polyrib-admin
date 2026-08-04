@@ -1,11 +1,33 @@
 import type { EntityStatus } from '../types/admin';
 
-export type BackendEntityDto = {
+export type BackendReferenceDto = {
+  _id?: string;
   id?: string | number;
-  _id?: string | number;
+  name?: string;
+  slug?: string;
+  path?: string | null;
+  image?: string | null;
+};
+
+export type BackendDownloadDto = {
+  label?: string;
+  url?: string;
+};
+
+export type BackendSeoDto = {
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string[];
+};
+
+export type BackendEntityDto = {
+  _id?: string;
+  id?: string | number;
   name?: string;
   title?: string;
-  description?: string;
+  slug?: string;
+  path?: string | null;
+  description?: string | string[];
   status?: EntityStatus | string;
   owner?: string;
   assignedTo?: string;
@@ -13,8 +35,11 @@ export type BackendEntityDto = {
   updated_at?: string;
   createdAt?: string;
   created_at?: string;
-  category?: string;
-  brand?: string;
+  category?: string | BackendReferenceDto | null;
+  subCategory?: string | BackendReferenceDto | null;
+  brand?: string | BackendReferenceDto | null;
+  materials?: Array<string | BackendReferenceDto>;
+  industries?: Array<string | BackendReferenceDto>;
   material?: string;
   source?: string;
   email?: string;
@@ -23,73 +48,55 @@ export type BackendEntityDto = {
   region?: string;
   role?: string;
   size?: string;
-  downloads?: number;
+  downloads?: number | BackendDownloadDto[];
+  image?: string | null;
+  pdfUrl?: string;
+  order?: number;
+  experience?: string;
+  keyFeatures?: string[];
+  applications?: string[];
+  specifications?: Record<string, unknown>;
+  isVisible?: boolean;
 };
 
-export type BackendListDto<TDto> = {
-  data?: TDto[];
-  rows?: TDto[];
-  items?: TDto[];
-  results?: TDto[];
-  total?: number;
-  page?: number;
-  pageSize?: number;
-  page_size?: number;
-  totalPages?: number;
-  total_pages?: number;
-  meta?: {
-    total?: number;
-    page?: number;
-    pageSize?: number;
-    page_size?: number;
-    totalPages?: number;
-    total_pages?: number;
+export type BackendProductFilterDto = {
+  filtersApplied?: {
+    category?: string | null;
+    material?: string | null;
+    industry?: string | null;
+    search?: string | null;
   };
+  products: BackendEntityDto[];
 };
 
-export type BackendMutationDto<TDto> = {
-  data?: TDto;
-  item?: TDto;
-  result?: TDto;
+export type BackendProductDetailDto = {
+  brand?: BackendEntityDto | null;
+  product: BackendEntityDto;
 };
 
-export type BackendSearchDto<TDto> = {
-  resourceKey?: string;
-  resource?: { key?: string };
-  row?: TDto;
-  item?: TDto;
-  data?: TDto;
+export type BackendMaterialDetailDto = {
+  material: BackendEntityDto;
+  products: BackendEntityDto[];
 };
 
-export type LoginRequestDto = {
-  email: string;
-  password: string;
-  remember?: boolean;
+export type BackendBrandBySubcategoryDto = {
+  subcategory?: BackendEntityDto;
+  brands: BackendEntityDto[];
+};
+
+export type BackendMachineComponentCatalogDto = {
+  success: boolean;
+  message?: string;
+  data?: {
+    experience?: string;
+    sidebar?: unknown[];
+    defaultProduct?: string | null;
+    products?: Record<string, BackendEntityDto>;
+  };
 };
 
 export type AuthTokenDto = {
   accessToken?: string;
   refreshToken?: string;
   expiresAt?: string;
-};
-
-export type PermissionDto = {
-  key: string;
-  label?: string;
-};
-
-export type CurrentUserDto = {
-  id: string | number;
-  name: string;
-  email: string;
-  role: string;
-  permissions?: string[] | PermissionDto[];
-};
-
-export type UploadAssetDto = {
-  id?: string | number;
-  url?: string;
-  name?: string;
-  mimeType?: string;
-  size?: number;
 };

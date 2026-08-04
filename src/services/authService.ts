@@ -1,11 +1,6 @@
-import api from '../lib/api';
-import type { Permission, Role, UserProfile } from '../auth/types';
-import type {
-  AuthTokenDto,
-  CurrentUserDto,
-  LoginRequestDto,
-  PermissionDto,
-} from '../repositories/dto';
+import type { Permission, UserProfile } from '../auth/types';
+import { MissingBackendApiError } from '../repositories/apiRepository';
+import type { AuthTokenDto } from '../repositories/dto';
 
 export type AuthSession = {
   user: UserProfile;
@@ -21,80 +16,23 @@ export type AuthService = {
 };
 
 export const authService: AuthService = {
-  async login(email, password, remember) {
-    const payload: LoginRequestDto = { email, password, remember };
-    const response = await api.post<{ user: CurrentUserDto; tokens: AuthTokenDto }>(
-      '/auth/login',
-      payload
-    );
-    persistTokens(response.data.tokens);
-    return {
-      user: toUserProfile(response.data.user),
-      tokens: response.data.tokens,
-    };
+  async login(_email, _password, _remember) {
+    throw new MissingBackendApiError('login', 'auth');
   },
 
   async logout() {
-    await api.post('/auth/logout');
-    clearTokens();
+    throw new MissingBackendApiError('logout', 'auth');
   },
 
-  async refreshToken(refreshToken) {
-    const response = await api.post<AuthTokenDto>('/auth/refresh', { refreshToken });
-    persistTokens(response.data);
-    return response.data;
+  async refreshToken(_refreshToken) {
+    throw new MissingBackendApiError('refreshToken', 'auth');
   },
 
   async getCurrentUser() {
-    const response = await api.get<CurrentUserDto>('/auth/me');
-    return toUserProfile(response.data);
+    throw new MissingBackendApiError('getCurrentUser', 'auth');
   },
 
   async loadPermissions() {
-    const response = await api.get<Array<string | PermissionDto>>('/auth/permissions');
-    return response.data.map(toPermission);
+    throw new MissingBackendApiError('loadPermissions', 'auth');
   },
 };
-
-function persistTokens(tokens: AuthTokenDto) {
-  if (tokens.accessToken) {
-    window.localStorage.setItem('polyrib_admin_access_token', tokens.accessToken);
-  }
-  if (tokens.refreshToken) {
-    window.localStorage.setItem('polyrib_admin_refresh_token', tokens.refreshToken);
-  }
-}
-
-function clearTokens() {
-  window.localStorage.removeItem('polyrib_admin_access_token');
-  window.localStorage.removeItem('polyrib_admin_refresh_token');
-}
-
-function toUserProfile(dto: CurrentUserDto): UserProfile {
-  return {
-    id: String(dto.id),
-    name: dto.name,
-    email: dto.email,
-    role: toRole(dto.role),
-    permissions: (dto.permissions ?? []).map(toPermission),
-  };
-}
-
-function toRole(role: string): Role {
-  if (role === 'super_admin' || role === 'editor' || role === 'viewer') return role;
-  return 'viewer';
-}
-
-function toPermission(permission: string | PermissionDto): Permission {
-  const key = typeof permission === 'string' ? permission : permission.key;
-  if (
-    key === 'dashboard.view' ||
-    key === 'users.manage' ||
-    key === 'content.edit' ||
-    key === 'content.view' ||
-    key === 'settings.manage'
-  ) {
-    return key;
-  }
-  return 'content.view';
-}
