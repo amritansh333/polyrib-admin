@@ -34,10 +34,10 @@ import Select from '../components/Select';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 import { useToast } from '../providers/ToastProvider';
-import { mockRepository } from '../services/mockRepository';
 import { resources } from '../services/mockData';
 import { downloadCsv } from '../utils/csv';
 import type { DataEntity, ResourceConfig } from '../types/admin';
+import useDashboardData from '../hooks/useDashboardData';
 
 const kpiPaths = [
   '/products',
@@ -61,56 +61,12 @@ export default function HomePage() {
   const [division, setDivision] = React.useState('all');
   const [period, setPeriod] = React.useState('today');
   const [status, setStatus] = React.useState('all');
-  const [loading, setLoading] = React.useState(true);
-  const [counts, setCounts] = React.useState<Record<string, number>>({});
-  const [products, setProducts] = React.useState<DataEntity[]>([]);
-  const [leads, setLeads] = React.useState<DataEntity[]>([]);
-  const [downloads, setDownloads] = React.useState<DataEntity[]>([]);
-  const [materials, setMaterials] = React.useState<DataEntity[]>([]);
-
-  React.useEffect(() => {
-    let active = true;
-
-    async function load() {
-      setLoading(true);
-      const dashboardStatus =
-        status === 'review' ? 'Review' : status === 'published' ? 'Published' : 'all';
-      const resourceCounts = await Promise.all(
-        resources.map(async (resource) => {
-          const result = await mockRepository.list(resource.key, {
-            query,
-            status: dashboardStatus,
-            pageSize: 1,
-          });
-          return [resource.key, result.total] as const;
-        })
-      );
-      const [productRows, leadRows, downloadRows, materialRows] = await Promise.all([
-        mockRepository.list('products', { query, status: dashboardStatus, pageSize: 4 }),
-        mockRepository.list('leads', {
-          query,
-          status: status === 'review' ? 'Pending' : 'all',
-          pageSize: 4,
-        }),
-        mockRepository.list('brochure-downloads', { query, pageSize: 4 }),
-        mockRepository.list('materials', { query, status: dashboardStatus, pageSize: 4 }),
-      ]);
-
-      if (active) {
-        setCounts(Object.fromEntries(resourceCounts));
-        setProducts(productRows.rows);
-        setLeads(leadRows.rows);
-        setDownloads(downloadRows.rows);
-        setMaterials(materialRows.rows);
-        setLoading(false);
-      }
-    }
-
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [division, period, query, status]);
+  const { loading, counts, products, leads, downloads, materials } = useDashboardData({
+    division,
+    period,
+    query,
+    status,
+  });
 
   const kpis = React.useMemo(
     () =>

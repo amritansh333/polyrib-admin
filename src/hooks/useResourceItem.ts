@@ -1,8 +1,9 @@
 import React from 'react';
-import { mockRepository } from '../services/mockRepository';
 import type { DataEntity } from '../types/admin';
+import { useRepository } from '../repositories/RepositoryProvider';
 
 export default function useResourceItem(resourceKey: string, id?: string) {
+  const repository = useRepository();
   const [item, setItem] = React.useState<DataEntity | null>(null);
   const [loading, setLoading] = React.useState(Boolean(id));
   const [error, setError] = React.useState<string | null>(null);
@@ -19,7 +20,7 @@ export default function useResourceItem(resourceKey: string, id?: string) {
       setLoading(true);
       setError(null);
       try {
-        const data = await mockRepository.find(resourceKey, id);
+        const data = await repository.get(resourceKey, id);
         if (active) setItem(data);
       } catch {
         if (active) setError('Unable to load this record.');
@@ -32,7 +33,18 @@ export default function useResourceItem(resourceKey: string, id?: string) {
     return () => {
       active = false;
     };
-  }, [id, resourceKey]);
+  }, [id, repository, resourceKey]);
 
-  return { item, loading, error };
+  const save = React.useCallback(
+    async (entity: DataEntity) => {
+      const data = entity.id
+        ? await repository.update(resourceKey, entity.id, entity)
+        : await repository.create(resourceKey, entity);
+      setItem(data);
+      return data;
+    },
+    [repository, resourceKey]
+  );
+
+  return { item, loading, error, save };
 }
