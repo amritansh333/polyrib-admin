@@ -1,0 +1,170 @@
+import React from 'react';
+import ThemeSwitch from './ThemeSwitch';
+import Avatar from './Avatar';
+import SearchBar from './SearchBar';
+import ActionMenu from './ActionMenu';
+import NotificationItem from './NotificationItem';
+import Button from './Button';
+import { useAuth } from '../auth/useAuth';
+import {
+  Bell,
+  ChevronDown,
+  FileText,
+  LogOut,
+  Menu,
+  PackagePlus,
+  PenTool,
+  Settings,
+  User,
+} from 'lucide-react';
+
+export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
+  const { user, logout } = useAuth();
+  const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
+  const notificationRef = React.useRef<HTMLDivElement>(null);
+  const profileRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!notificationRef.current?.contains(target)) setNotificationsOpen(false);
+      if (!profileRef.current?.contains(target)) setProfileOpen(false);
+    };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-divider bg-surface-raised/95 shadow-header backdrop-blur-sm">
+      <div className="flex h-16 min-w-0 items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open navigation"
+          className="flex h-10 w-10 shrink-0 items-center justify-center border border-border text-charcoal-light transition-colors hover:border-primary hover:text-primary lg:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <div className="hidden min-w-0 flex-1 lg:block">
+          <nav className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <span>Admin</span>
+            <span>/</span>
+            <span className="text-charcoal">Dashboard</span>
+          </nav>
+          <div className="mt-0.5 font-heading text-lg font-semibold text-charcoal">
+            Website Operations
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-1 lg:max-w-md">
+          <SearchBar
+            aria-label="Global search"
+            placeholder="Search products, materials, leads..."
+            containerClassName="h-10"
+          />
+        </div>
+
+        <div className="hidden items-center gap-2 xl:flex">
+          <ActionMenu
+            items={[
+              { label: 'New product draft', icon: <PackagePlus className="h-4 w-4" /> },
+              { label: 'Review quote requests', icon: <FileText className="h-4 w-4" /> },
+              { label: 'Open drawing queue', icon: <PenTool className="h-4 w-4" /> },
+            ]}
+          />
+          <Button type="button" size="sm" variant="primary">
+            <PackagePlus />
+            Quick Action
+          </Button>
+        </div>
+
+        <div className="relative" ref={notificationRef}>
+          <button
+            type="button"
+            aria-label="Notifications"
+            aria-expanded={notificationsOpen}
+            onClick={() => setNotificationsOpen((state) => !state)}
+            className="relative flex h-10 w-10 items-center justify-center border border-border bg-surface text-charcoal-light transition-colors hover:border-primary hover:text-primary"
+          >
+            <Bell className="h-4 w-4" />
+            <span className="absolute right-2 top-2 h-2 w-2 bg-primary" />
+          </button>
+          {notificationsOpen && (
+            <div className="absolute right-0 top-12 z-30 w-[min(92vw,380px)] border border-border bg-surface-raised shadow-card-hover">
+              <div className="border-b border-divider px-4 py-3">
+                <p className="font-heading text-base font-semibold text-charcoal">Notifications</p>
+                <p className="text-xs text-muted-foreground">
+                  Operational alerts and lead activity
+                </p>
+              </div>
+              <NotificationItem
+                unread
+                title="New drawing request"
+                description="Kanpur Foods uploaded a conveyor guide rail drawing."
+                time="8m"
+                icon={<PenTool className="h-4 w-4" />}
+              />
+              <NotificationItem
+                title="Brochure downloaded"
+                description="POLYRIB V datasheet accessed by an automotive lead."
+                time="31m"
+                icon={<FileText className="h-4 w-4" />}
+              />
+              <NotificationItem
+                title="System check complete"
+                description="Website, storage, and database services are healthy."
+                time="1h"
+                icon={<Settings className="h-4 w-4" />}
+              />
+            </div>
+          )}
+        </div>
+
+        <ThemeSwitch />
+
+        <div className="relative" ref={profileRef}>
+          <button
+            type="button"
+            aria-expanded={profileOpen}
+            onClick={() => setProfileOpen((state) => !state)}
+            className="flex h-10 items-center gap-2 border border-border bg-surface px-2 text-left transition-colors hover:border-primary"
+          >
+            <Avatar name={user?.name ?? 'Super Admin'} size="sm" />
+            <span className="hidden min-w-0 md:block">
+              <span className="block truncate text-sm font-semibold text-charcoal">
+                {user?.name ?? 'Super Admin'}
+              </span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                {user?.role?.replace('_', ' ') ?? 'super admin'}
+              </span>
+            </span>
+            <ChevronDown className="hidden h-4 w-4 text-primary md:block" />
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 top-12 z-30 w-56 border border-border bg-surface-raised py-1 shadow-card-hover">
+              <button className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-charcoal-light hover:bg-surface-subtle hover:text-primary">
+                <User className="h-4 w-4" />
+                Profile
+              </button>
+              <button className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-charcoal-light hover:bg-surface-subtle hover:text-primary">
+                <Settings className="h-4 w-4" />
+                Account Settings
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="flex w-full items-center gap-2 border-t border-divider px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-surface-subtle dark:text-red-300"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

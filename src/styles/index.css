@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import 'tailwindcss';
+@config "../../tailwind.config.cjs";
+
+:root {
+  --background: 210 20% 98%;
+  --foreground: 215 35% 13%;
+  --surface: 0 0% 100%;
+  --surface-raised: 0 0% 100%;
+  --surface-subtle: 210 18% 96%;
+  --surface-muted: 210 16% 93%;
+  --primary: 197 68% 48%;
+  --primary-foreground: 0 0% 100%;
+  --primary-light: 197 68% 58%;
+  --primary-dark: 197 68% 36%;
+  --muted: 210 16% 93%;
+  --muted-foreground: 215 16% 48%;
+  --border: 197 20% 88%;
+  --divider: 214 14% 90%;
+  --charcoal: 215 35% 13%;
+  --charcoal-light: 215 20% 28%;
+  --success: 154 62% 35%;
+  --warning: 38 92% 46%;
+  --danger: 0 72% 51%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 215 20% 28%;
+  --sidebar-active: 197 68% 48%;
+  --sidebar-muted: 210 18% 96%;
+  --radius: 0.25rem;
+}
+
+.dark {
+  --background: 215 31% 8%;
+  --foreground: 210 20% 94%;
+  --surface: 215 28% 11%;
+  --surface-raised: 215 24% 14%;
+  --surface-subtle: 215 26% 10%;
+  --surface-muted: 215 18% 18%;
+  --primary: 197 68% 58%;
+  --primary-foreground: 215 35% 9%;
+  --primary-light: 197 78% 66%;
+  --primary-dark: 197 68% 44%;
+  --muted: 215 18% 18%;
+  --muted-foreground: 214 12% 68%;
+  --border: 213 18% 22%;
+  --divider: 213 18% 19%;
+  --charcoal: 210 20% 96%;
+  --charcoal-light: 210 14% 78%;
+  --success: 154 58% 48%;
+  --warning: 38 92% 58%;
+  --danger: 0 72% 62%;
+  --sidebar-background: 215 28% 11%;
+  --sidebar-foreground: 210 14% 78%;
+  --sidebar-active: 197 68% 58%;
+  --sidebar-muted: 215 26% 10%;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Barlow', system-ui, sans-serif;
+  color: hsl(var(--charcoal));
+  letter-spacing: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.18);
+}
+
+.section-label {
+  color: hsl(var(--primary));
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.industrial-scrollbar {
+  scrollbar-color: hsl(var(--primary) / 0.45) transparent;
+  scrollbar-width: thin;
+}
+
+.industrial-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.industrial-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.35);
+}
+
+.industrial-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,45 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useAuthStore } from './authStore';
+import { UserProfile } from './types';
+
+interface AuthContextValue {
+  user: UserProfile | null;
+  loading: boolean;
+  login: (email: string, password: string, remember?: boolean) => Promise<boolean>;
+  logout: () => void;
+  sendReset: (email: string) => Promise<boolean>;
+  resetPassword: (token: string, newPassword: string) => Promise<boolean>;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+  const login = useAuthStore((s) => s.login);
+  const logout = useAuthStore((s) => s.logout);
+  const sendReset = useAuthStore((s) => s.sendReset);
+  const resetPassword = useAuthStore((s) => s.resetPassword);
+  const init = useAuthStore((s) => s.init);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      await init();
+      setInitialized(true);
+    })();
+  }, [init]);
+
+  // While initializing, show children but loading flag is set for consumers to react.
+  return (
+    <AuthContext.Provider value={{ user, loading, login, logout, sendReset, resetPassword }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export function useAuthContext() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuthContext must be used within AuthProvider');
+  return ctx;
+}
