@@ -31,6 +31,7 @@ const connectedResources = new Set([
   'materials',
   'machine-components',
   'semi-finished-products',
+  'content',
 ]);
 
 const bulkDeleteResources = new Set(['categories', 'brands', 'materials', 'products']);
@@ -73,11 +74,13 @@ export const apiRepository: ResourceRepository = {
       case 'brands':
       case 'materials':
       case 'machine-components':
+      case 'content':
         return adminGetResource(resourceKey, id);
       default:
         throw new MissingBackendApiError('get', resourceKey);
     }
   },
+
 
   async create(resourceKey, entity) {
     switch (resourceKey) {
@@ -86,6 +89,7 @@ export const apiRepository: ResourceRepository = {
       case 'brands':
       case 'materials':
       case 'machine-components':
+      case 'content':
         return adminCreateResource(resourceKey, entity);
       default:
         throw new MissingBackendApiError('create', resourceKey);
@@ -99,6 +103,7 @@ export const apiRepository: ResourceRepository = {
       case 'brands':
       case 'materials':
       case 'machine-components':
+      case 'content':
         return adminUpdateResource(resourceKey, id, entity);
       default:
         throw new MissingBackendApiError('update', resourceKey);
@@ -112,6 +117,7 @@ export const apiRepository: ResourceRepository = {
       case 'brands':
       case 'materials':
       case 'machine-components':
+      case 'content':
         return adminDeleteResource(resourceKey, ids);
       default:
         throw new MissingBackendApiError('delete', resourceKey);
