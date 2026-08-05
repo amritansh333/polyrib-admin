@@ -21,7 +21,7 @@ export default function Breadcrumb({
     >
       <Home className="h-3.5 w-3.5 text-primary" />
       {items.map((it, idx) => (
-        <React.Fragment key={it.to}>
+        <React.Fragment key={`${it.to}-${idx}`}>
           {idx > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
           <Link
             to={it.to}

@@ -13,7 +13,7 @@ import type { ResourceListParams, ResourceListResult, ResourceSearchResult } fro
 const fallbackStatus: EntityStatus = 'Published';
 
 export function toDataEntity(dto: BackendEntityDto): DataEntity {
-  const id = String(dto.slug ?? dto._id ?? dto.id ?? '');
+  const id = String(dto._id ?? dto.id ?? dto.slug ?? '');
   const brand = toReferenceName(dto.brand);
   const material = toReferenceList(dto.materials).join(', ') || dto.material;
   const category = toReferenceName(dto.category) || toReferenceName(dto.subCategory);
@@ -33,6 +33,7 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
     brand,
     material,
     source: dto.path ?? dto.slug,
+    slug: dto.slug,
     size: dto.image ?? undefined,
     downloads: Array.isArray(dto.downloads) ? dto.downloads.length : dto.downloads,
   };

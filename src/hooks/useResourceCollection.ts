@@ -2,6 +2,7 @@ import React from 'react';
 import type { DataEntity, SortDirection } from '../types/admin';
 import useDebouncedValue from './useDebouncedValue';
 import { useRepository } from '../repositories/RepositoryProvider';
+import { MissingBackendApiError } from '../lib/api';
 
 export default function useResourceCollection(resourceKey: string) {
   const repository = useRepository();
@@ -39,8 +40,16 @@ export default function useResourceCollection(resourceKey: string) {
       setTotal(data.total);
       setTotalPages(data.totalPages);
       if (data.page !== page) setPage(data.page);
-    } catch {
-      setError('Unable to load records. Retry the operation.');
+    } catch (err: any) {
+      if (err?.name === 'MissingBackendApiError' || err instanceof MissingBackendApiError) {
+        // Backend admin API for this resource is not implemented — show friendly message and empty state
+        setRows([]);
+        setTotal(0);
+        setTotalPages(1);
+        setError('Feature not implemented yet');
+      } else {
+        setError('Unable to load records. Retry the operation.');
+      }
     } finally {
       setLoading(false);
     }

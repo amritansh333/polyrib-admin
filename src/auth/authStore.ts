@@ -8,6 +8,7 @@ interface AuthState {
   user: UserProfile | null;
   loading: boolean;
   remember: boolean;
+  initialized: boolean;
   init: () => Promise<void>;
   login: (email: string, password: string, remember?: boolean) => Promise<boolean>;
   logout: () => void;
@@ -17,11 +18,15 @@ interface AuthState {
 
 // Typed set/get helpers for Zustand to avoid implicit any
 type SetFn = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>)) => void;
-export const useAuthStore = create<AuthState>((set: SetFn) => ({
+// include get to inspect current state inside init
+export const useAuthStore = create<AuthState>((set: SetFn, get) => ({
   user: null,
-  loading: false,
+  loading: true,
   remember: false,
+  initialized: false,
   init: async () => {
+    // avoid re-running init
+    if (get().initialized) return;
     set({ loading: true });
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -32,7 +37,7 @@ export const useAuthStore = create<AuthState>((set: SetFn) => ({
     } catch {
       // ignore
     } finally {
-      set({ loading: false });
+      set({ loading: false, initialized: true });
     }
   },
   login: async (email: string, password: string, remember = false) => {
@@ -41,7 +46,12 @@ export const useAuthStore = create<AuthState>((set: SetFn) => ({
       const user = await mock.authenticate(email, password);
       if (user) {
         set({ user, remember });
-        if (remember) localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        try {
+          // Persist authenticated user so session survives refresh regardless of "remember" checkbox.
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        } catch {
+          // ignore storage errors
+        }
         return true;
       }
       return false;

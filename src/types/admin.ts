@@ -15,12 +15,15 @@ export type DataEntity = {
   brand?: string;
   material?: string;
   source?: string;
+  slug?: string;
   email?: string;
   phone?: string;
   company?: string;
   region?: string;
   role?: string;
   size?: string;
+  image?: string;
+  file?: string;
   downloads?: number;
 };
 

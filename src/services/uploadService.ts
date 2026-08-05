@@ -1,4 +1,5 @@
-import { MissingBackendApiError } from '../repositories/apiRepository';
+import api from '../lib/api';
+import { MissingBackendApiError } from '../lib/api';
 
 export type UploadOptions = {
   resourceKey?: string;
@@ -19,16 +20,48 @@ export type UploadService = {
   uploadMultipart(files: File[], options?: UploadOptions): Promise<UploadedAsset[]>;
 };
 
+function normalizeUploadFolder(resourceKey?: string) {
+  return resourceKey?.replaceAll('|', '').replaceAll(' ', '-') || 'misc';
+}
+
+function toUploadedAsset(file: File, payload: any): UploadedAsset {
+  return {
+    id: payload.filename ?? payload.url ?? file.name,
+    url: payload.url,
+    name: payload.originalname ?? file.name,
+    mimeType: payload.mimetype ?? file.type,
+    size: payload.size ?? file.size,
+  };
+}
+
+async function uploadSingle(file: File, options?: UploadOptions) {
+  const folder = normalizeUploadFolder(options?.resourceKey);
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await api.post('/admin/uploads/single', formData, {
+    params: { folder },
+    onUploadProgress(event) {
+      if (options?.onUploadProgress && event.total) {
+        options.onUploadProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    },
+  });
+
+  return toUploadedAsset(file, response.data.data);
+}
+
 export const uploadService: UploadService = {
-  async uploadImage(_file, _options) {
-    throw new MissingBackendApiError('uploadImage', 'uploads');
+  async uploadImage(file, options) {
+    return uploadSingle(file, options);
   },
 
-  async uploadPdf(_file, _options) {
-    throw new MissingBackendApiError('uploadPdf', 'uploads');
+  async uploadPdf(file, options) {
+    return uploadSingle(file, options);
   },
 
-  async uploadMultipart(_files, _options) {
-    throw new MissingBackendApiError('uploadMultipart', 'uploads');
+  async uploadMultipart(files, options) {
+    const uploads = await Promise.all(files.map((file) => uploadSingle(file, options)));
+    return uploads;
   },
 };

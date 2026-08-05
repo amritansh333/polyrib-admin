@@ -141,6 +141,15 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   }
 
   if (error) {
+    if (error === 'Feature not implemented yet') {
+      return (
+        <EmptyState
+          title="Feature not implemented yet"
+          description="This admin endpoint is not implemented in the backend yet. Refresh the page after the backend is updated."
+        />
+      );
+    }
+
     return <EmptyState title="Records could not be loaded" description={error} />;
   }
 

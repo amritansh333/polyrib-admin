@@ -9,6 +9,8 @@ export type ResourceListParams = {
   pageSize?: number;
   sortKey?: keyof DataEntity;
   sortDirection?: SortDirection;
+  limit?: number;
+  experience?: string;
 };
 
 export type ResourceListResult = {

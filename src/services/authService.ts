@@ -1,5 +1,5 @@
 import type { Permission, UserProfile } from '../auth/types';
-import { MissingBackendApiError } from '../repositories/apiRepository';
+import { MissingBackendApiError } from '../lib/api';
 import type { AuthTokenDto } from '../repositories/dto';
 
 export type AuthSession = {

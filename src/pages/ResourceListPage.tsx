@@ -12,6 +12,7 @@ import ResourceTable, { type ResourceTableColumn } from '../components/ResourceT
 import MetricCard from '../components/MetricCard';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import useResourceCollection from '../hooks/useResourceCollection';
+import { useRepository } from '../repositories/RepositoryProvider';
 import { useToast } from '../providers/ToastProvider';
 import { downloadCsv } from '../utils/csv';
 import type { DataEntity, ResourceConfig } from '../types/admin';
@@ -19,6 +20,7 @@ import type { DataEntity, ResourceConfig } from '../types/admin';
 export default function ResourceListPage({ config }: { config: ResourceConfig }) {
   const navigate = useNavigate();
   const toast = useToast();
+  const repository = useRepository();
   const collection = useResourceCollection(config.key);
   const [deleteIds, setDeleteIds] = React.useState<string[]>([]);
 
@@ -100,7 +102,9 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
         meta={
           <>
             <StatusBadge tone="blue">{collection.total} records</StatusBadge>
-            <StatusBadge tone="green">Interactive</StatusBadge>
+            <StatusBadge tone={repository.source === 'api' ? 'green' : 'neutral'}>
+              {repository.source === 'api' ? 'API Repository' : 'Mock Repository'}
+            </StatusBadge>
           </>
         }
       />
@@ -110,7 +114,11 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
           <MetricCard
             title="Total Records"
             value={String(collection.total)}
-            description="Loaded from mock repository."
+            description={
+              repository.source === 'api'
+                ? 'Loaded from backend API.'
+                : 'Loaded from mock repository.'
+            }
           />
           <MetricCard
             title="Published / Active"
@@ -176,7 +184,11 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
         <ConfirmationDialog
           open={deleteIds.length > 0}
           title="Delete record"
-          description="This removes the selected mock record from the local admin repository."
+          description={
+            repository.source === 'api'
+              ? 'This removes the selected record from the backend admin repository.'
+              : 'This removes the selected mock record from the local admin repository.'
+          }
           confirmLabel={collection.actionLoading ? 'Deleting...' : 'Delete'}
           danger
           onClose={() => setDeleteIds([])}

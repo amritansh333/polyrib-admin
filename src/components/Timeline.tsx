@@ -18,8 +18,8 @@ export default function Timeline({ items }: { items: TimelineEntry[] }) {
 
   return (
     <ol className="relative space-y-5 border-l border-divider pl-5">
-      {items.map((item) => (
-        <li key={`${item.title}-${item.time}`} className="relative">
+      {items.map((item, index) => (
+        <li key={`${item.title}-${item.time}-${index}`} className="relative">
           <span
             className={clsx(
               'absolute -left-[25px] top-1.5 h-2.5 w-2.5 border-2 border-surface-raised',
