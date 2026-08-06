@@ -134,27 +134,13 @@ export const resources: ResourceConfig[] = [
   {
     key: 'leads',
     title: 'Leads',
-    eyebrow: 'Commercial',
-    description: 'Review incoming buyer enquiries and qualification workflow.',
-    basePath: '/leads',
-    searchPlaceholder: 'Search companies, contacts, products...',
-    icon: Users,
-    filters: [
-      { label: 'All leads', value: 'all' },
-      { label: 'New', value: 'Pending' },
-      { label: 'Closed', value: 'Closed' },
-    ],
-  },
-  {
-    key: 'brochure-downloads',
-    title: 'Brochure Downloads',
     eyebrow: 'Lead Intelligence',
     description: 'Track verified document access and product interest signals.',
-    basePath: '/brochure-downloads',
+    basePath: '/leads',
     searchPlaceholder: 'Search downloads...',
     icon: FileDown,
     filters: [
-      { label: 'All downloads', value: 'all' },
+      { label: 'All leads', value: 'all' },
       { label: 'Active', value: 'Active' },
     ],
   },
@@ -173,19 +159,20 @@ export const resources: ResourceConfig[] = [
     ],
   },
   {
-    key: 'quote-requests',
-    title: 'Quote Requests',
+    key: 'enquiries',
+    title: 'Enquiries',
     eyebrow: 'Sales Queue',
-    description: 'Manage quotation requests from product, material, and contact pages.',
-    basePath: '/quote-requests',
-    searchPlaceholder: 'Search quote requests...',
+    description: 'Customer contact enquiries submitted via the website contact and quote forms.',
+    basePath: '/enquiries',
+    searchPlaceholder: 'Search enquiries...',
     icon: FileText,
     filters: [
-      { label: 'All quotes', value: 'all' },
+      { label: 'All enquiries', value: 'all' },
       { label: 'Pending', value: 'Pending' },
       { label: 'Closed', value: 'Closed' },
     ],
   },
+
   {
     key: 'content',
     title: 'Website Content',
@@ -604,7 +591,7 @@ export const mockData: Record<string, DataEntity[]> = {
       'Closed'
     ),
   ],
-  'brochure-downloads': [
+  'leads': [
     download('D-901', 'Polyrib Master Product Catalogue', 'Mecpro Conveyors', 'Gujarat', 438),
     download('D-902', 'Ripla Cutting Boards Catalogue', 'Apex Food Systems', 'Uttar Pradesh', 267),
     download('D-903', 'Arete Lining Materials Catalogue', 'Eastern Minerals', 'Odisha', 219),
@@ -633,7 +620,7 @@ export const mockData: Record<string, DataEntity[]> = {
       'Closed'
     ),
   ],
-  'quote-requests': [
+  'enquiries': [
     request(
       'QR-1101',
       'PCCLEAR roofing sheet enquiry',

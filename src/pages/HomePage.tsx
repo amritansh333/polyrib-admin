@@ -47,9 +47,8 @@ const kpiPaths = [
   '/materials',
   '/machine-components',
   '/leads',
-  '/brochure-downloads',
   '/drawing-requests',
-  '/quote-requests',
+  '/enquiries',
   '/media-library',
   '/users',
   '/roles',
@@ -257,8 +256,8 @@ export default function HomePage() {
               columns={downloadColumns}
               loading={loading}
               pageSize={4}
-              onView={(row) => navigate(`/brochure-downloads/${row.id}`)}
-              onEdit={(row) => navigate(`/brochure-downloads/${row.id}/edit`)}
+              onView={(row) => navigate(`/leads/${row.id}`)}
+              onEdit={(row) => navigate(`/leads/${row.id}/edit`)}
             />
           </DashboardCard>
 
@@ -308,10 +307,10 @@ export default function HomePage() {
                 onClick={() => navigate('/media-library/upload')}
               />
               <QuickActionCard
-                title="Review quote queue"
-                description="Triage pending industrial enquiries."
+                title="Review enquiries"
+                description="Triage pending customer enquiries."
                 icon={<ClipboardList className="h-4 w-4" />}
-                onClick={() => navigate('/quote-requests')}
+                onClick={() => navigate('/enquiries')}
               />
             </div>
           </DashboardCard>

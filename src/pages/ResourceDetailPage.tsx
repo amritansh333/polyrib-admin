@@ -27,7 +27,7 @@ export default function ResourceDetailPage({ config }: { config: ResourceConfig 
           { to: `${config.basePath}/${id}`, label: id ?? 'Record' },
         ]}
         action={
-          item && (
+          item && config.key !== 'enquiries' && (
             <Button type="button" onClick={() => navigate(`${config.basePath}/${item.id}/edit`)}>
               <Edit />
               Edit
@@ -90,18 +90,30 @@ export default function ResourceDetailPage({ config }: { config: ResourceConfig 
 }
 
 function detailRows(item: DataEntity): [string, string | number | undefined][] {
-  return [
-    ['ID', item.id],
-    ['Status', item.status],
-    ['Category', item.category],
-    ['Brand', item.brand],
-    ['Material', item.material],
-    ['Company', item.company],
-    ['Region', item.region],
-    ['Downloads', item.downloads],
-    ['Created', item.createdAt],
-    ['Updated', item.updatedAt],
-  ];
+  // Render all properties returned by the backend dynamically. Do not hide fields.
+  const entries = Object.entries(item).map(([key, value]) => [
+    // Humanize the key for label: camelCase/snake_case -> Title Case
+    key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/[_-]/g, ' ')
+      .replace(/^./, (s) => s.toUpperCase()),
+    // Render normalized dates and simple values
+    value as string | number | undefined,
+  ] as [string, string | number | undefined]);
+
+  // Prefer showing ID and Status first if present
+  const prioritizedKeys = ['id', 'status', 'firstName', 'lastName', 'name', 'company', 'companyName', 'email', 'mobileNumber', 'phone', 'productName', 'product', 'downloads', 'downloadCount', 'verifiedAt', 'createdAt', 'updatedAt'];
+
+  const sorted = entries.sort((a, b) => {
+    const ai = prioritizedKeys.findIndex((k) => k.toLowerCase() === a[0].toLowerCase() || a[0].toLowerCase().includes(k.toLowerCase()));
+    const bi = prioritizedKeys.findIndex((k) => k.toLowerCase() === b[0].toLowerCase() || b[0].toLowerCase().includes(k.toLowerCase()));
+    if (ai === -1 && bi === -1) return a[0].localeCompare(b[0]);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+
+  return sorted;
 }
 
 function statusTone(status: DataEntity['status']) {

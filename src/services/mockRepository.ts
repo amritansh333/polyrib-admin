@@ -205,7 +205,7 @@ function restoreStatus(resourceKey: string): DataEntity['status'] {
     [
       'brands',
       'media-library',
-      'brochure-downloads',
+      'leads',
       'users',
       'roles',
       'settings',
@@ -215,7 +215,7 @@ function restoreStatus(resourceKey: string): DataEntity['status'] {
   ) {
     return 'Active';
   }
-  if (['leads', 'drawing-requests', 'quote-requests'].includes(resourceKey)) return 'Pending';
+  if (['leads', 'drawing-requests', 'enquiries'].includes(resourceKey)) return 'Pending';
   return 'Published';
 }
 

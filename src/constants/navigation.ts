@@ -51,10 +51,9 @@ export const sidebarSections: SidebarSection[] = [
   {
     label: 'Leads',
     items: [
-      { label: 'Leads', to: '/leads', icon: Users },
-      { label: 'Brochure Downloads', to: '/brochure-downloads', icon: FileDown },
+      { label: 'Leads', to: '/leads', icon: FileDown },
       { label: 'Drawing Requests', to: '/drawing-requests', icon: PenTool },
-      { label: 'Quote Requests', to: '/quote-requests', icon: FileText },
+      { label: 'Enquiries', to: '/enquiries', icon: FileText },
     ],
   },
   {

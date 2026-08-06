@@ -33,43 +33,91 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
     }
   };
 
-  const columns: ResourceTableColumn<DataEntity>[] = [
-    {
-      key: 'name',
-      header: config.key === 'users' || config.key === 'leads' ? 'Name / Company' : 'Record',
-      sortable: true,
-      render: (row) => (
-        <div>
-          <p className="font-semibold text-charcoal">{row.name}</p>
-          <p className="text-xs text-muted-foreground">{row.id}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'category',
-      header: 'Type',
-      sortable: true,
-      render: (row) => row.category ?? row.role ?? row.source ?? 'CMS',
-    },
-    {
-      key: 'owner',
-      header: config.key === 'leads' ? 'Source' : 'Owner',
-      sortable: true,
-      render: (row) => row.source ?? row.owner,
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      sortable: true,
-      render: (row) => <StatusBadge tone={statusTone(row.status)}>{row.status}</StatusBadge>,
-    },
-    {
-      key: 'updatedAt',
-      header: 'Updated',
-      sortable: true,
-      render: (row) => row.updatedAt,
-    },
-  ];
+  let columns: ResourceTableColumn<DataEntity>[];
+
+  // Use specific columns for enquiries (site contact submissions)
+  if (config.key === 'enquiries') {
+    columns = [
+      {
+        key: 'fullName',
+        header: 'Full Name',
+        sortable: true,
+        render: (row) => (
+          <div>
+            <p className="font-semibold text-charcoal">{row.fullName || row.name}</p>
+            <p className="text-xs text-muted-foreground">{row.id}</p>
+          </div>
+        ),
+      },
+      { key: 'company', header: 'Company', sortable: true, render: (row) => row.company },
+      { key: 'email', header: 'Email', sortable: true, render: (row) => row.email },
+      { key: 'phone', header: 'Phone', sortable: true, render: (row) => row.phone },
+      { key: 'product', header: 'Product', sortable: true, render: (row) => row.product },
+      { key: 'requirement', header: 'Requirement', sortable: false, render: (row) => row.requirement },
+      { key: 'createdAt', header: 'Created At', sortable: true, render: (row) => row.createdAt },
+    ];
+  } else if (config.key === 'leads') {
+    // Lead-specific columns (use lead DTO fields mapped in transformers)
+    columns = [
+      {
+        key: 'name',
+        header: 'Name',
+        sortable: true,
+        render: (row) => (
+          <div>
+            <p className="font-semibold text-charcoal">{row.name || '-'}</p>
+            <p className="text-xs text-muted-foreground">{row.id}</p>
+          </div>
+        ),
+      },
+      { key: 'company', header: 'Company', sortable: true, render: (row) => row.company ?? '-'},
+      { key: 'email', header: 'Email', sortable: true, render: (row) => row.email ?? '-'},
+      { key: 'mobile', header: 'Mobile', sortable: true, render: (row) => row.mobileNumber ?? row.phone ?? '-'},
+      { key: 'product', header: 'Product', sortable: true, render: (row) => row.product ?? '-'},
+      { key: 'status', header: 'Status', sortable: true, render: (row) => <StatusBadge tone={statusTone(row.status)}>{row.status}</StatusBadge> },
+      { key: 'downloads', header: 'Downloads', sortable: true, render: (row) => row.downloads ?? 0 },
+      { key: 'verified', header: 'Verified', sortable: true, render: (row) => row.verifiedAt ?? '-' },
+      { key: 'createdAt', header: 'Created At', sortable: true, render: (row) => row.createdAt ?? '-' },
+    ];
+  } else {
+    columns = [
+      {
+        key: 'name',
+        header: config.key === 'users' || config.key === 'leads' ? 'Name / Company' : 'Record',
+        sortable: true,
+        render: (row) => (
+          <div>
+            <p className="font-semibold text-charcoal">{row.name}</p>
+            <p className="text-xs text-muted-foreground">{row.id}</p>
+          </div>
+        ),
+      },
+      {
+        key: 'category',
+        header: 'Type',
+        sortable: true,
+        render: (row) => row.category ?? row.role ?? row.source ?? 'CMS',
+      },
+      {
+        key: 'owner',
+        header: config.key === 'leads' ? 'Source' : 'Owner',
+        sortable: true,
+        render: (row) => row.source ?? row.owner,
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortable: true,
+        render: (row) => <StatusBadge tone={statusTone(row.status)}>{row.status}</StatusBadge>,
+      },
+      {
+        key: 'updatedAt',
+        header: 'Updated',
+        sortable: true,
+        render: (row) => row.updatedAt,
+      },
+    ];
+  }
 
   return (
     <>
@@ -169,9 +217,9 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
           onPageChange={collection.setPage}
           onSortChange={(key) => collection.setSort(key as keyof DataEntity)}
           onView={(row) => navigate(`${config.basePath}/${row.id}`)}
-          onEdit={(row) => navigate(`${config.basePath}/${row.id}/edit`)}
+          onEdit={config.key === 'enquiries' ? undefined : (row) => navigate(`${config.basePath}/${row.id}/edit`)}
           onDelete={setDeleteIds}
-          onDuplicate={(row) =>
+          onDuplicate={config.key === 'enquiries' ? undefined : (row) =>
             void runAction(() => collection.duplicate(row.id), `${row.name} duplicated.`)
           }
           onArchive={(ids) =>
@@ -194,6 +242,9 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
           onClose={() => setDeleteIds([])}
           onConfirm={() =>
             void runAction(async () => {
+              if (deleteIds.length !== 1) {
+                throw new Error('Bulk delete is not allowed for this resource. Select a single record to delete.');
+              }
               await collection.remove(deleteIds);
             }, `${deleteIds.length} record deleted.`)
           }

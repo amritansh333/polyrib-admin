@@ -32,9 +32,12 @@ const connectedResources = new Set([
   'machine-components',
   'semi-finished-products',
   'content',
+  'roles',
+  'settings',
+  'system-logs',
 ]);
 
-const bulkDeleteResources = new Set(['categories', 'brands', 'materials', 'products']);
+const bulkDeleteResources = new Set(['categories', 'brands', 'materials', 'products', 'roles', 'settings']);
 
 
 export const apiRepository: ResourceRepository = {
@@ -75,6 +78,12 @@ export const apiRepository: ResourceRepository = {
       case 'materials':
       case 'machine-components':
       case 'content':
+      case 'roles':
+      case 'settings':
+      case 'system-logs':
+      case 'enquiries':
+      case 'leads':
+      case 'drawing-requests':
         return adminGetResource(resourceKey, id);
       default:
         throw new MissingBackendApiError('get', resourceKey);
@@ -90,6 +99,8 @@ export const apiRepository: ResourceRepository = {
       case 'materials':
       case 'machine-components':
       case 'content':
+      case 'roles':
+      case 'settings':
         return adminCreateResource(resourceKey, entity);
       default:
         throw new MissingBackendApiError('create', resourceKey);
@@ -104,6 +115,8 @@ export const apiRepository: ResourceRepository = {
       case 'materials':
       case 'machine-components':
       case 'content':
+      case 'roles':
+      case 'settings':
         return adminUpdateResource(resourceKey, id, entity);
       default:
         throw new MissingBackendApiError('update', resourceKey);
@@ -118,6 +131,9 @@ export const apiRepository: ResourceRepository = {
       case 'materials':
       case 'machine-components':
       case 'content':
+      case 'roles':
+      case 'settings':
+      case 'system-logs':
         return adminDeleteResource(resourceKey, ids);
       default:
         throw new MissingBackendApiError('delete', resourceKey);
@@ -142,13 +158,15 @@ export const apiRepository: ResourceRepository = {
       const response = await api.get('/admin/search', { params: { q: query } });
       const data = (response.data && response.data.data) || {};
       // data shape: { products, categories, brands, materials, leads, brochureLeads }
-      const components: any[] = [];
+      const components: any[] = [        'roles',
+      ];
       if (data.products) components.push(...toSearchResultsByResource('products', data.products));
       if (data.categories) components.push(...toSearchResultsByResource('categories', data.categories));
       if (data.brands) components.push(...toSearchResultsByResource('brands', data.brands));
       if (data.materials) components.push(...toSearchResultsByResource('materials', data.materials));
       if (data.leads) components.push(...toSearchResultsByResource('leads', data.leads));
-      if (data.brochureLeads) components.push(...toSearchResultsByResource('brochure-downloads', data.brochureLeads));
+      if (data.brochureLeads) components.push(...toSearchResultsByResource('leads', data.brochureLeads));
+      if (data.systemLogs) components.push(...toSearchResultsByResource('system-logs', data.systemLogs));
       return components.slice(0, 12);
     } catch (err) {
       // If backend search missing, fallback to per-resource listing (legacy)

@@ -21,9 +21,17 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
     ? dto.description.join(' ')
     : String(dto.description ?? '');
 
-  return {
+  // Prefer explicit firstName/lastName for Lead DTOs, then fullName/name/title for other DTOs (Enquiries etc.)
+  const nameValue =
+    dto.name ??
+    (dto.firstName || dto.lastName ? `${dto.firstName ?? ''} ${dto.lastName ?? ''}`.trim() : undefined) ??
+    dto.fullName ??
+    dto.title ??
+    '';
+
+  const entity: any = {
     id,
-    name: String(dto.name ?? dto.title ?? ''),
+    name: String(nameValue),
     description,
     status: normalizeStatus(dto.status, dto.isVisible),
     owner: String(dto.owner ?? dto.assignedTo ?? dto.experience ?? 'Backend'),
@@ -35,8 +43,36 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
     source: dto.path ?? dto.slug,
     slug: dto.slug,
     size: dto.image ?? undefined,
-    downloads: Array.isArray(dto.downloads) ? dto.downloads.length : dto.downloads,
+    // Normalize downloads: prefer numeric downloadCount (Lead) then array length or downloads field
+    downloads:
+      dto.downloadCount !== undefined
+        ? dto.downloadCount
+        : Array.isArray(dto.downloads)
+        ? dto.downloads.length
+        : dto.downloads,
   };
+
+  // Map Lead-specific fields when present
+  if (dto.companyName !== undefined) entity.company = dto.companyName;
+  if (dto.email !== undefined) entity.email = dto.email;
+  if (dto.mobileNumber !== undefined) {
+    // keep backward-compatible 'phone' key used by some UI parts
+    entity.phone = dto.mobileNumber;
+    entity.mobileNumber = dto.mobileNumber;
+  }
+  if (dto.productName !== undefined) entity.product = dto.productName;
+  if (dto.downloadHistory !== undefined) entity.downloadHistory = dto.downloadHistory;
+  if (dto.lastDownloadAt !== undefined) entity.lastDownloadAt = normalizeDate(dto.lastDownloadAt);
+  if (dto.verifiedAt !== undefined) entity.verifiedAt = normalizeDate(dto.verifiedAt);
+
+  // Preserve enquiry-specific fields if present (backwards compatibility)
+  if (dto.fullName !== undefined) entity.fullName = dto.fullName;
+  if (dto.company !== undefined && entity.company === undefined) entity.company = dto.company;
+  if (dto.phone !== undefined && entity.phone === undefined) entity.phone = dto.phone;
+  if (dto.product !== undefined && entity.product === undefined) entity.product = dto.product;
+  if (dto.requirement !== undefined) entity.requirement = dto.requirement;
+
+  return entity;
 }
 
 export function toProductListParams(params: ResourceListParams = {}) {
