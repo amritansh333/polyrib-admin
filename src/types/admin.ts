@@ -25,6 +25,24 @@ export type DataEntity = {
   image?: string;
   file?: string;
   downloads?: number;
+
+
+  fullName?: string;
+
+
+  mobileNumber?: string;
+
+
+
+  product?: string;
+
+  requirement?: string;
+
+ 
+
+  verifiedAt?: string;
+
+
 };
 
 export type ResourceConfig = {

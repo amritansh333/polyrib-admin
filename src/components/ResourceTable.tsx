@@ -28,7 +28,7 @@ export type ResourceTableColumn<T> = {
   className?: string;
 };
 
-export default function ResourceTable<T extends { id: string; status?: string }>({
+export default function ResourceTable<T extends { id?: string; _id?: string; slug?: string; name?: string; status?: string }>({
   rows,
   columns,
   loading,
@@ -71,6 +71,11 @@ export default function ResourceTable<T extends { id: string; status?: string }>
     key: string;
     direction: SortDirection;
   }>({ key: String(columns[0]?.key ?? 'id'), direction: 'asc' });
+
+  // Helper to obtain a stable id for rows. Falls back to _id, slug, name, or provided index.
+  const getRowId = (row: T, fallback?: number) =>
+    String(row.id ?? row._id ?? (row as any).slug ?? (row as any).name ?? fallback ?? '');
+
   const controlled = Boolean(onPageChange || onSortChange);
   const page = controlledPage ?? internalPage;
   const sort = {
@@ -108,7 +113,9 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   const pageRows = controlled
     ? sortedRows
     : sortedRows.slice((page - 1) * pageSize, page * pageSize);
-  const allPageSelected = pageRows.length > 0 && pageRows.every((row) => selected.includes(row.id));
+  const allPageSelected =
+  pageRows.length > 0 &&
+  pageRows.every((row, idx) => selected.includes(getRowId(row, idx)));
 
   const toggleSort = (column: ResourceTableColumn<T>) => {
     if (!column.sortable) return;
@@ -125,8 +132,8 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   const toggleAll = () => {
     setSelected((current) =>
       allPageSelected
-        ? current.filter((id) => !pageRows.some((row) => row.id === id))
-        : [...new Set([...current, ...pageRows.map((row) => row.id)])]
+        ? current.filter((id) => !pageRows.some((row, idx) => getRowId(row, idx) === id))
+        : [...new Set([...current, ...pageRows.map((row, idx) => getRowId(row, idx))])]
     );
   };
 
@@ -226,19 +233,22 @@ export default function ResourceTable<T extends { id: string; status?: string }>
             </tr>
           </thead>
           <tbody className="divide-y divide-divider">
-            {pageRows.map((row) => (
-              <tr key={row.id} className="transition-colors duration-200 hover:bg-surface-subtle">
+            {pageRows.map((row, index) => {
+  const rowId = getRowId(row, index);
+
+  return (
+              <tr key={rowId} className="transition-colors duration-200 hover:bg-surface-subtle">
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
-                    aria-label={`Select ${row.id}`}
-                    checked={selected.includes(row.id)}
+                    aria-label={`Select ${rowId}`}
+                    checked={selected.includes(rowId)}
                     onChange={() =>
                       setSelected((current) =>
-                        current.includes(row.id)
-                          ? current.filter((id) => id !== row.id)
-                          : [...current, row.id]
-                      )
+  current.includes(rowId)
+    ? current.filter((id) => id !== rowId)
+    : [...current, rowId]
+)
                     }
                     className="h-4 w-4 accent-[hsl(var(--primary))]"
                   />
@@ -273,40 +283,44 @@ export default function ResourceTable<T extends { id: string; status?: string }>
                         ? {
                             label: 'Restore',
                             icon: <RotateCcw className="h-4 w-4" />,
-                            onSelect: () => onRestore?.([row.id]),
+                            onSelect: () => onRestore?.([rowId]),
                           }
                         : {
                             label: 'Archive',
                             icon: <Archive className="h-4 w-4" />,
-                            onSelect: () => onArchive?.([row.id]),
+                            onSelect: () => onArchive?.([rowId]),
                           },
                       {
                         label: 'Delete',
                         icon: <Trash2 className="h-4 w-4" />,
                         danger: true,
-                        onSelect: () => onDelete?.([row.id]),
+                        onSelect: () => onDelete?.([rowId]),
                       },
                     ]}
                   />
                 </td>
               </tr>
-            ))}
+                        );
+          })}
           </tbody>
         </table>
       </div>
 
       <div className="grid gap-3 lg:hidden">
-        {pageRows.map((row) => (
-          <Card key={row.id} className="p-4">
+        {pageRows.map((row, index) => {
+  const rowId = getRowId(row, index);
+
+  return (
+          <Card key={rowId} className="p-4">
             <div className="mb-4 flex items-start justify-between gap-4">
               <Checkbox
-                checked={selected.includes(row.id)}
+                checked={selected.includes(rowId)}
                 onChange={() =>
                   setSelected((current) =>
-                    current.includes(row.id)
-                      ? current.filter((id) => id !== row.id)
-                      : [...current, row.id]
-                  )
+  current.includes(rowId)
+    ? current.filter((id) => id !== rowId)
+    : [...current, rowId]
+)
                 }
               />
               <ActionMenu
@@ -330,18 +344,18 @@ export default function ResourceTable<T extends { id: string; status?: string }>
                     ? {
                         label: 'Restore',
                         icon: <RotateCcw className="h-4 w-4" />,
-                        onSelect: () => onRestore?.([row.id]),
+                        onSelect: () => onRestore?.([rowId]),
                       }
                     : {
                         label: 'Archive',
                         icon: <Archive className="h-4 w-4" />,
-                        onSelect: () => onArchive?.([row.id]),
+                        onSelect: () => onArchive?.([rowId]),
                       },
                   {
                     label: 'Delete',
                     icon: <Trash2 className="h-4 w-4" />,
                     danger: true,
-                    onSelect: () => onDelete?.([row.id]),
+                    onSelect: () => onDelete?.([rowId]),
                   },
                 ]}
               />
@@ -359,7 +373,8 @@ export default function ResourceTable<T extends { id: string; status?: string }>
               ))}
             </dl>
           </Card>
-        ))}
+            );
+        })}
       </div>
 
       <Pagination

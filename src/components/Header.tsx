@@ -138,7 +138,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
             <div className="absolute right-0 top-12 z-30 w-60 border border-border bg-surface-raised py-1 shadow-card-hover">
               {[
                 { label: 'New product draft', icon: PackagePlus, to: '/products/new' },
-                { label: 'Review quote requests', icon: FileText, to: '/quote-requests' },
+                { label: 'Review enquiries', icon: FileText, to: '/enquiries' },
                 { label: 'Open drawing queue', icon: PenTool, to: '/drawing-requests' },
               ].map((item) => (
                 <button

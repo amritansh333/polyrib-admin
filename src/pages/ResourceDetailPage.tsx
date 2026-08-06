@@ -89,31 +89,85 @@ export default function ResourceDetailPage({ config }: { config: ResourceConfig 
   );
 }
 
-function detailRows(item: DataEntity): [string, string | number | undefined][] {
-  // Render all properties returned by the backend dynamically. Do not hide fields.
+function detailRows(item: DataEntity): [string, React.ReactNode][] {
+  const formatValue = (value: unknown): React.ReactNode => {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ''
+    ) {
+      return 'Not assigned';
+    }
+
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      return String(value);
+    }
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '[]';
+
+      return (
+        <pre className="whitespace-pre-wrap break-all text-xs">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      );
+    }
+
+    if (typeof value === 'object') {
+      return (
+        <pre className="whitespace-pre-wrap break-all text-xs">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      );
+    }
+
+    return String(value);
+  };
+
   const entries = Object.entries(item).map(([key, value]) => [
-    // Humanize the key for label: camelCase/snake_case -> Title Case
     key
       .replace(/([A-Z])/g, ' $1')
       .replace(/[_-]/g, ' ')
-      .replace(/^./, (s) => s.toUpperCase()),
-    // Render normalized dates and simple values
-    value as string | number | undefined,
-  ] as [string, string | number | undefined]);
+      .replace(/^./, s => s.toUpperCase()),
+    formatValue(value),
+  ] as [string, React.ReactNode]);
 
-  // Prefer showing ID and Status first if present
-  const prioritizedKeys = ['id', 'status', 'firstName', 'lastName', 'name', 'company', 'companyName', 'email', 'mobileNumber', 'phone', 'productName', 'product', 'downloads', 'downloadCount', 'verifiedAt', 'createdAt', 'updatedAt'];
+  const priority = [
+    'id',
+    'status',
+    'name',
+    'company',
+    'email',
+    'mobileNumber',
+    'phone',
+    'product',
+    'downloads',
+    'verifiedAt',
+    'createdAt',
+    'updatedAt',
+  ];
 
-  const sorted = entries.sort((a, b) => {
-    const ai = prioritizedKeys.findIndex((k) => k.toLowerCase() === a[0].toLowerCase() || a[0].toLowerCase().includes(k.toLowerCase()));
-    const bi = prioritizedKeys.findIndex((k) => k.toLowerCase() === b[0].toLowerCase() || b[0].toLowerCase().includes(k.toLowerCase()));
+  entries.sort((a, b) => {
+    const ai = priority.findIndex(k =>
+      a[0].toLowerCase().includes(k.toLowerCase())
+    );
+
+    const bi = priority.findIndex(k =>
+      b[0].toLowerCase().includes(k.toLowerCase())
+    );
+
     if (ai === -1 && bi === -1) return a[0].localeCompare(b[0]);
     if (ai === -1) return 1;
     if (bi === -1) return -1;
+
     return ai - bi;
   });
 
-  return sorted;
+  return entries;
 }
 
 function statusTone(status: DataEntity['status']) {
