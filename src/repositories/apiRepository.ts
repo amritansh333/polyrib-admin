@@ -34,10 +34,11 @@ const connectedResources = new Set([
   'content',
   'roles',
   'settings',
+  'subcategories',
   'system-logs',
 ]);
 
-const bulkDeleteResources = new Set(['categories', 'brands', 'materials', 'products', 'roles', 'settings']);
+const bulkDeleteResources = new Set(['categories', 'subcategories','brands', 'materials', 'products', 'roles', 'settings']);
 
 
 export const apiRepository: ResourceRepository = {
@@ -50,6 +51,7 @@ export const apiRepository: ResourceRepository = {
       case 'semi-finished-products':
         return listProducts({ ...params, experience: 'semi_finished' });
       case 'categories':
+      case 'subcategories':
       case 'brands':
       case 'materials':
       case 'machine-components':
@@ -85,6 +87,8 @@ export const apiRepository: ResourceRepository = {
       case 'leads':
       case 'drawing-requests':
         return adminGetResource(resourceKey, id);
+      case 'subcategories':
+        return adminGetResourceRaw(resourceKey, id);
       default:
         throw new MissingBackendApiError('get', resourceKey);
     }
@@ -95,6 +99,7 @@ export const apiRepository: ResourceRepository = {
     switch (resourceKey) {
       case 'products':
       case 'categories':
+      case 'subcategories':
       case 'brands':
       case 'materials':
       case 'machine-components':
@@ -111,6 +116,7 @@ export const apiRepository: ResourceRepository = {
     switch (resourceKey) {
       case 'products':
       case 'categories':
+      case 'subcategories':
       case 'brands':
       case 'materials':
       case 'machine-components':
@@ -127,6 +133,7 @@ export const apiRepository: ResourceRepository = {
     switch (resourceKey) {
       case 'products':
       case 'categories':
+      case 'subcategories':
       case 'brands':
       case 'materials':
       case 'machine-components':
@@ -162,6 +169,7 @@ export const apiRepository: ResourceRepository = {
       ];
       if (data.products) components.push(...toSearchResultsByResource('products', data.products));
       if (data.categories) components.push(...toSearchResultsByResource('categories', data.categories));
+      if (data.subcategories) components.push(...toSearchResultsByResource('subcategories', data.subcategories));
       if (data.brands) components.push(...toSearchResultsByResource('brands', data.brands));
       if (data.materials) components.push(...toSearchResultsByResource('materials', data.materials));
       if (data.leads) components.push(...toSearchResultsByResource('leads', data.leads));
@@ -257,6 +265,14 @@ async function adminGetResource(resourceKey: string, id: string) {
     `${adminResourcePath(resourceKey)}/${id}`
   );
   return toDataEntity(response.data.data);
+}
+
+async function adminGetResourceRaw(resourceKey: string, id: string) {
+  if (missingAdminApis.has(resourceKey)) throw new MissingBackendApiError('get', resourceKey);
+  const response = await api.get<AdminResponse<any>>(
+    `${adminResourcePath(resourceKey)}/${id}`
+  );
+  return response.data.data;
 }
 
 async function adminCreateResource(resourceKey: string, entity: BackendEntityDto) {

@@ -41,7 +41,8 @@ export const sidebarSections: SidebarSection[] = [
     items: [
       { label: 'Products', to: '/products', icon: Package },
       { label: 'Categories', to: '/categories', icon: FolderTree },
-      { label: 'Brands', to: '/brands', icon: Tags },
+    { label: 'Subcategories', to: '/subcategories', icon: FolderTree },
+    { label: 'Brands', to: '/brands', icon: Tags },
       { label: 'Machine Components', to: '/machine-components', icon: Wrench },
       { label: 'Semi Finished Products', to: '/semi-finished-products', icon: Boxes },
       { label: 'Materials', to: '/materials', icon: Layers },

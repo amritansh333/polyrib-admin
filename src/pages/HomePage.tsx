@@ -43,6 +43,7 @@ import useDashboardData from '../hooks/useDashboardData';
 const kpiPaths = [
   '/products',
   '/categories',
+  '/subcategories',
   '/brands',
   '/materials',
   '/machine-components',

@@ -56,6 +56,20 @@ export const resources: ResourceConfig[] = [
     ],
   },
   {
+    key: 'subcategories',
+    title: 'Subcategories',
+    eyebrow: 'Catalog',
+    description: 'Subcategory landing groups within categories.',
+    basePath: '/subcategories',
+    createPath: '/subcategories/new',
+    newLabel: 'New Subcategory',
+    searchPlaceholder: 'Search subcategories...',
+    icon: FolderTree,
+    filters: [
+      { label: 'All subcategories', value: 'all' },
+    ],
+  },
+  {
     key: 'brands',
     title: 'Brands',
     eyebrow: 'Brand Portfolio',
@@ -591,7 +605,7 @@ export const mockData: Record<string, DataEntity[]> = {
       'Closed'
     ),
   ],
-  'leads': [
+  downloads: [
     download('D-901', 'Polyrib Master Product Catalogue', 'Mecpro Conveyors', 'Gujarat', 438),
     download('D-902', 'Ripla Cutting Boards Catalogue', 'Apex Food Systems', 'Uttar Pradesh', 267),
     download('D-903', 'Arete Lining Materials Catalogue', 'Eastern Minerals', 'Odisha', 219),
