@@ -79,7 +79,7 @@ export default function ResourceFormPage({
         updatedAt: '2026-08-04',
       };
 
-      if (!entity.slug && ['categories', 'brands', 'materials', 'machine-components'].includes(config.key)) {
+      if (!entity.slug && ['machine-components'].includes(config.key)) {
         entity.slug = slugify(entity.name);
       }
 

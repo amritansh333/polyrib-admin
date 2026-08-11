@@ -74,7 +74,18 @@ export default function useDashboardData({
 
       // Fallback / mock repository behavior: compute counts locally but only for resources we render
       try {
-        const relevantKeys = ['products','categories','brands','materials','machine-components','semi-finished-products','media-library','leads','users','roles'];
+        const relevantKeys = [
+          'products',
+          'categories',
+          'brands',
+          'materials',
+          'machine-components',
+          'semi-finished-products',
+          'media-library',
+          'leads',
+          'users',
+          'roles',
+        ];
         const resourceCounts = await Promise.all(
           resources
             .filter((r) => relevantKeys.includes(r.key))
@@ -87,7 +98,7 @@ export default function useDashboardData({
               return [resource.key, result.total] as const;
             })
         );
- 
+
         const [productRows, leadRows, downloadRows, materialRows] = await Promise.all([
           repository.list('products', { query, status: dashboardStatus, pageSize: 4 }),
           repository.list('leads', {

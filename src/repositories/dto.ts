@@ -28,6 +28,11 @@ export type BackendEntityDto = {
   slug?: string;
   path?: string | null;
   description?: string | string[];
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+  };
   status?: EntityStatus | string;
   owner?: string;
   assignedTo?: string;
@@ -57,6 +62,29 @@ export type BackendEntityDto = {
   applications?: string[];
   specifications?: Record<string, unknown>;
   isVisible?: boolean;
+
+  // Additional optional fields for lead and enquiry DTOs
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  downloadCount?: number;
+  companyName?: string;
+  mobileNumber?: string;
+  productName?: string;
+  downloadHistory?: string[];
+  lastDownloadAt?: string;
+  verifiedAt?: string;
+  requirement?: string;
+  product?: string;
+  notes?: string;
+  files?: Array<{
+    originalName?: string;
+    storedName?: string;
+    mimeType?: string;
+    extension?: string;
+    size?: number;
+    relativePath?: string;
+  }>;
 };
 
 export type BackendProductFilterDto = {

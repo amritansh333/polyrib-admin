@@ -32,7 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // While initializing, show children but loading flag is set for consumers to react.
   return (
-    <AuthContext.Provider value={{ user, loading, initialized, login, logout, sendReset, resetPassword }}>
+    <AuthContext.Provider
+      value={{ user, loading, initialized, login, logout, sendReset, resetPassword }}
+    >
       {children}
     </AuthContext.Provider>
   );

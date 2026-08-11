@@ -47,7 +47,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-divider bg-surface-raised/95 shadow-header backdrop-blur-sm">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-divider bg-surface-raised/95 shadow-header backdrop-blur-sm">
       <div className="flex h-16 min-w-0 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <button
           type="button"
@@ -64,9 +64,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
             <span>/</span>
             <span className="text-charcoal">Dashboard</span>
           </nav>
-          <div className="mt-0.5 font-heading text-lg font-semibold text-charcoal">
-            Website Operations
-          </div>
+          <div className="mt-0.5 font-heading text-lg font-bold text-charcoal">ADMIN PANEL</div>
         </div>
 
         <div className="relative min-w-0 flex-1 lg:max-w-md" ref={searchRef}>

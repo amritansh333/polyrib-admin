@@ -69,6 +69,13 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    // Treat HTTP 304 Not Modified as a non-error so callers can handle cached responses.
+    // Some admin endpoints may return 304 for cache revalidation; treating it as an error
+    // causes the UI to show a failure even though the browser cache has a valid body.
+    if (error.response?.status === 304) {
+      return Promise.resolve(error.response as any);
+    }
+
     const normalized = normalizeApiError(error);
 
     // If a 404 comes back for an admin resource, mark it missing so subsequent

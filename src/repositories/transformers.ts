@@ -20,19 +20,25 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
   const description = Array.isArray(dto.description)
     ? dto.description.join(' ')
     : String(dto.description ?? '');
+  const descriptionArray = Array.isArray(dto.description) ? dto.description : undefined;
+  const image = dto.image ?? undefined;
 
   // Prefer explicit firstName/lastName for Lead DTOs, then fullName/name/title for other DTOs (Enquiries etc.)
   const nameValue =
     dto.name ??
-    (dto.firstName || dto.lastName ? `${dto.firstName ?? ''} ${dto.lastName ?? ''}`.trim() : undefined) ??
+    (dto.firstName || dto.lastName
+      ? `${dto.firstName ?? ''} ${dto.lastName ?? ''}`.trim()
+      : undefined) ??
     dto.fullName ??
     dto.title ??
     '';
 
   const entity: any = {
+    ...dto,
     id,
     name: String(nameValue),
     description,
+    descriptionArray,
     status: normalizeStatus(dto.status, dto.isVisible),
     owner: String(dto.owner ?? dto.assignedTo ?? dto.experience ?? 'Backend'),
     updatedAt: normalizeDate(dto.updatedAt ?? dto.updated_at),
@@ -42,14 +48,20 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
     material,
     source: dto.path ?? dto.slug,
     slug: dto.slug,
-    size: dto.image ?? undefined,
+    size: image,
+    image,
+    seo: dto.seo ?? {
+      metaTitle: '',
+      metaDescription: '',
+      keywords: [],
+    },
     // Normalize downloads: prefer numeric downloadCount (Lead) then array length or downloads field
     downloads:
       dto.downloadCount !== undefined
         ? dto.downloadCount
         : Array.isArray(dto.downloads)
-        ? dto.downloads.length
-        : dto.downloads,
+          ? dto.downloads.length
+          : dto.downloads,
   };
 
   // Map Lead-specific fields when present
@@ -71,6 +83,17 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
   if (dto.phone !== undefined && entity.phone === undefined) entity.phone = dto.phone;
   if (dto.product !== undefined && entity.product === undefined) entity.product = dto.product;
   if (dto.requirement !== undefined) entity.requirement = dto.requirement;
+  if (dto.notes !== undefined) entity.notes = dto.notes;
+  if (Array.isArray(dto.files)) {
+    entity.files = dto.files.map((file) => ({
+      originalName: String(file.originalName ?? ''),
+      storedName: String(file.storedName ?? ''),
+      mimeType: String(file.mimeType ?? ''),
+      extension: String(file.extension ?? ''),
+      size: Number(file.size ?? 0),
+      relativePath: String(file.relativePath ?? ''),
+    }));
+  }
 
   return entity;
 }
@@ -207,13 +230,25 @@ function normalizeStatus(status: BackendEntityDto['status'], isVisible?: boolean
     status === 'Archived' ||
     status === 'Active' ||
     status === 'Pending' ||
-    status === 'Closed'
+    status === 'Closed' ||
+    status === 'New' ||
+    status === 'Contacted' ||
+    status === 'In Progress' ||
+    status === 'Resolved'
   ) {
     return status;
   }
   return isVisible === false ? 'Draft' : fallbackStatus;
 }
 
-function normalizeDate(value: string | undefined) {
-  return value ? value.slice(0, 10) : '';
+function normalizeDate(value: string | Date | undefined) {
+  if (!value) return '';
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return String(value);
 }

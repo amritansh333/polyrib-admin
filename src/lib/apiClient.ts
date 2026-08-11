@@ -23,7 +23,6 @@ export class MissingBackendApiError extends Error {
   }
 }
 
-
 export const api = axios.create({
   baseURL: ENV.API_BASE_URL,
   timeout: REQUEST_TIMEOUT_MS,

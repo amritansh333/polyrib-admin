@@ -11,6 +11,30 @@ import UnauthorizedPage from '../pages/UnauthorizedPage';
 import ResourceListPage from '../pages/ResourceListPage';
 import ResourceDetailPage from '../pages/ResourceDetailPage';
 import ResourceFormPage from '../pages/ResourceFormPage';
+import EnquiryListPage from '../pages/EnquiryListPage';
+import EnquiryDetailPage from '../pages/EnquiryDetailPage';
+import EnquiryFormPage from '../pages/EnquiryFormPage';
+import LeadListPage from '../pages/LeadListPage';
+import LeadDetailPage from '../pages/LeadDetailPage';
+import LeadFormPage from '../pages/LeadFormPage';
+import MaterialListPage from '../pages/MaterialListPage';
+import MaterialDetailPage from '../pages/MaterialDetailPage';
+import MaterialFormPage from '../pages/MaterialFormPage';
+import BlogListPage from '../pages/BlogListPage';
+import BlogDetailPage from '../pages/BlogDetailPage';
+import BlogFormPage from '../pages/BlogFormPage';
+import IndustryListPage from '../pages/IndustryListPage';
+import IndustryDetailPage from '../pages/IndustryDetailPage';
+import IndustryFormPage from '../pages/IndustryFormPage';
+import DrawingRequestListPage from '../pages/DrawingRequestListPage';
+import DrawingRequestDetailPage from '../pages/DrawingRequestDetailPage';
+import DrawingRequestFormPage from '../pages/DrawingRequestFormPage';
+import BrandListPage from '../pages/BrandListPage';
+import BrandDetailPage from '../pages/BrandDetailPage';
+import BrandFormPage from '../pages/BrandFormPage';
+import CategoryListPage from '../pages/CategoryListPage';
+import CategoryDetailPage from '../pages/CategoryDetailPage';
+import CategoryFormPage from '../pages/CategoryFormPage';
 import { resources } from '../services/mockData';
 import type { ResourceConfig } from '../types/admin';
 
@@ -38,6 +62,163 @@ function resourceRoutes(config: ResourceConfig) {
       [config.createPath, `${config.basePath}/new`].filter((path): path is string => Boolean(path))
     ),
   ];
+
+  if (config.key === 'blog') {
+    return [
+      <Route key={config.basePath} path={config.basePath} element={withAdmin(<BlogListPage />)} />,
+      <Route
+        key="/blog/new"
+        path="/blog/new"
+        element={withAdmin(<BlogFormPage mode="create" />)}
+      />,
+      <Route key="/blog/:id" path="/blog/:id" element={withAdmin(<BlogDetailPage />)} />,
+      <Route
+        key="/blog/:id/edit"
+        path="/blog/:id/edit"
+        element={withAdmin(<BlogFormPage mode="edit" />)}
+      />,
+    ];
+  }
+
+  if (config.key === 'industries') {
+    return [
+      <Route
+        key={config.basePath}
+        path={config.basePath}
+        element={withAdmin(<IndustryListPage />)}
+      />,
+      <Route
+        key="/industries/new"
+        path="/industries/new"
+        element={withAdmin(<IndustryFormPage mode="create" />)}
+      />,
+      <Route
+        key="/industries/:id"
+        path="/industries/:id"
+        element={withAdmin(<IndustryDetailPage />)}
+      />,
+      <Route
+        key="/industries/:id/edit"
+        path="/industries/:id/edit"
+        element={withAdmin(<IndustryFormPage mode="edit" />)}
+      />,
+    ];
+  }
+
+  if (config.key === 'drawing-requests') {
+    return [
+      <Route
+        key={config.basePath}
+        path={config.basePath}
+        element={withAdmin(<DrawingRequestListPage />)}
+      />,
+      <Route
+        key="/drawing-requests/:id"
+        path="/drawing-requests/:id"
+        element={withAdmin(<DrawingRequestDetailPage />)}
+      />,
+      <Route
+        key="/drawing-requests/:id/edit"
+        path="/drawing-requests/:id/edit"
+        element={withAdmin(<DrawingRequestFormPage />)}
+      />,
+    ];
+  }
+
+  if (config.key === 'enquiries') {
+    return [
+      <Route
+        key={config.basePath}
+        path={config.basePath}
+        element={withAdmin(<EnquiryListPage />)}
+      />,
+      <Route
+        key="/enquiries/:id"
+        path="/enquiries/:id"
+        element={withAdmin(<EnquiryDetailPage />)}
+      />,
+      <Route
+        key="/enquiries/:id/edit"
+        path="/enquiries/:id/edit"
+        element={withAdmin(<EnquiryFormPage />)}
+      />,
+    ];
+  }
+
+  if (config.key === 'leads') {
+    return [
+      <Route key={config.basePath} path={config.basePath} element={withAdmin(<LeadListPage />)} />,
+      <Route key="/leads/:id" path="/leads/:id" element={withAdmin(<LeadDetailPage />)} />,
+      <Route key="/leads/:id/edit" path="/leads/:id/edit" element={withAdmin(<LeadFormPage />)} />,
+    ];
+  }
+
+  if (config.key === 'materials') {
+    return [
+      <Route
+        key={config.basePath}
+        path={config.basePath}
+        element={withAdmin(<MaterialListPage />)}
+      />,
+      <Route
+        key="/materials/new"
+        path="/materials/new"
+        element={withAdmin(<MaterialFormPage mode="create" />)}
+      />,
+      <Route
+        key="/materials/:id"
+        path="/materials/:id"
+        element={withAdmin(<MaterialDetailPage />)}
+      />,
+      <Route
+        key="/materials/:id/edit"
+        path="/materials/:id/edit"
+        element={withAdmin(<MaterialFormPage mode="edit" />)}
+      />,
+    ];
+  }
+
+  if (config.key === 'brands') {
+    return [
+      <Route key={config.basePath} path={config.basePath} element={withAdmin(<BrandListPage />)} />,
+      <Route
+        key="/brands/new"
+        path="/brands/new"
+        element={withAdmin(<BrandFormPage mode="create" />)}
+      />,
+      <Route key="/brands/:id" path="/brands/:id" element={withAdmin(<BrandDetailPage />)} />,
+      <Route
+        key="/brands/:id/edit"
+        path="/brands/:id/edit"
+        element={withAdmin(<BrandFormPage mode="edit" />)}
+      />,
+    ];
+  }
+
+  if (config.key === 'categories') {
+    return [
+      <Route
+        key={config.basePath}
+        path={config.basePath}
+        element={withAdmin(<CategoryListPage />)}
+      />,
+      <Route
+        key="/categories/new"
+        path="/categories/new"
+        element={withAdmin(<CategoryFormPage mode="create" />)}
+      />,
+      <Route
+        key="/categories/:id"
+        path="/categories/:id"
+        element={withAdmin(<CategoryDetailPage />)}
+      />,
+      <Route
+        key="/categories/:id/edit"
+        path="/categories/:id/edit"
+        element={withAdmin(<CategoryFormPage mode="edit" />)}
+      />,
+    ];
+  }
 
   return [
     <Route

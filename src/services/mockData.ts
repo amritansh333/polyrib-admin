@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Boxes,
+  Building2,
   FileDown,
   FileText,
   FolderTree,
@@ -56,6 +57,22 @@ export const resources: ResourceConfig[] = [
     ],
   },
   {
+    key: 'industries',
+    title: 'Industries',
+    eyebrow: 'Catalog',
+    description: 'Manage industry classifications, SEO copy, and public-market filters.',
+    basePath: '/industries',
+    createPath: '/industries/new',
+    newLabel: 'New Industry',
+    searchPlaceholder: 'Search industries...',
+    icon: Building2,
+    filters: [
+      { label: 'All industries', value: 'all' },
+      { label: 'Published', value: 'Published' },
+      { label: 'Review', value: 'Review' },
+    ],
+  },
+  {
     key: 'subcategories',
     title: 'Subcategories',
     eyebrow: 'Catalog',
@@ -65,9 +82,7 @@ export const resources: ResourceConfig[] = [
     newLabel: 'New Subcategory',
     searchPlaceholder: 'Search subcategories...',
     icon: FolderTree,
-    filters: [
-      { label: 'All subcategories', value: 'all' },
-    ],
+    filters: [{ label: 'All subcategories', value: 'all' }],
   },
   {
     key: 'brands',
@@ -168,8 +183,11 @@ export const resources: ResourceConfig[] = [
     icon: PenTool,
     filters: [
       { label: 'All drawings', value: 'all' },
-      { label: 'Pending', value: 'Pending' },
-      { label: 'Closed', value: 'Closed' },
+      { label: 'New', value: 'NEW' },
+      { label: 'Under review', value: 'UNDER_REVIEW' },
+      { label: 'Quoted', value: 'QUOTED' },
+      { label: 'Completed', value: 'COMPLETED' },
+      { label: 'Rejected', value: 'REJECTED' },
     ],
   },
   {
@@ -182,7 +200,10 @@ export const resources: ResourceConfig[] = [
     icon: FileText,
     filters: [
       { label: 'All enquiries', value: 'all' },
-      { label: 'Pending', value: 'Pending' },
+      { label: 'New', value: 'New' },
+      { label: 'Contacted', value: 'Contacted' },
+      { label: 'In Progress', value: 'In Progress' },
+      { label: 'Resolved', value: 'Resolved' },
       { label: 'Closed', value: 'Closed' },
     ],
   },
@@ -199,6 +220,22 @@ export const resources: ResourceConfig[] = [
       { label: 'All pages', value: 'all' },
       { label: 'Published', value: 'Published' },
       { label: 'Review', value: 'Review' },
+    ],
+  },
+  {
+    key: 'blog',
+    title: 'Blog & Gallery',
+    eyebrow: 'Website Content',
+    description: 'Manage blog articles, galleries, featured images, and publication settings.',
+    basePath: '/blog',
+    createPath: '/blog/new',
+    newLabel: 'New Post',
+    searchPlaceholder: 'Search blog posts, categories, tags...',
+    icon: ScrollText,
+    filters: [
+      { label: 'All posts', value: 'all' },
+      { label: 'Published', value: 'published' },
+      { label: 'Draft', value: 'draft' },
     ],
   },
   {
@@ -634,7 +671,7 @@ export const mockData: Record<string, DataEntity[]> = {
       'Closed'
     ),
   ],
-  'enquiries': [
+  enquiries: [
     request(
       'QR-1101',
       'PCCLEAR roofing sheet enquiry',

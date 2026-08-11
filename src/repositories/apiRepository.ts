@@ -1,9 +1,5 @@
 import api, { MissingBackendApiError, missingAdminApis } from '../lib/api';
-import type {
-  BackendEntityDto,
-  BackendMaterialDetailDto,
-  BackendProductDetailDto,
-} from './dto';
+import type { BackendEntityDto, BackendMaterialDetailDto, BackendProductDetailDto } from './dto';
 import {
   toDataEntity,
   toMachineComponentRows,
@@ -36,10 +32,20 @@ const connectedResources = new Set([
   'settings',
   'subcategories',
   'system-logs',
+  'blog',
+  'drawing-requests',
+  'industries',
 ]);
 
-const bulkDeleteResources = new Set(['categories', 'subcategories','brands', 'materials', 'products', 'roles', 'settings']);
-
+const bulkDeleteResources = new Set([
+  'categories',
+  'subcategories',
+  'brands',
+  'materials',
+  'products',
+  'roles',
+  'settings',
+]);
 
 export const apiRepository: ResourceRepository = {
   source: 'api',
@@ -55,6 +61,12 @@ export const apiRepository: ResourceRepository = {
       case 'brands':
       case 'materials':
       case 'machine-components':
+      case 'content':
+      case 'roles':
+      case 'settings':
+      case 'system-logs':
+      case 'blog':
+      case 'industries':
         return listAdminResource(resourceKey, params);
       default:
         try {
@@ -83,6 +95,8 @@ export const apiRepository: ResourceRepository = {
       case 'roles':
       case 'settings':
       case 'system-logs':
+      case 'blog':
+      case 'industries':
       case 'enquiries':
       case 'leads':
       case 'drawing-requests':
@@ -93,7 +107,6 @@ export const apiRepository: ResourceRepository = {
         throw new MissingBackendApiError('get', resourceKey);
     }
   },
-
 
   async create(resourceKey, entity) {
     switch (resourceKey) {
@@ -106,6 +119,8 @@ export const apiRepository: ResourceRepository = {
       case 'content':
       case 'roles':
       case 'settings':
+      case 'blog':
+      case 'industries':
         return adminCreateResource(resourceKey, entity);
       default:
         throw new MissingBackendApiError('create', resourceKey);
@@ -123,9 +138,21 @@ export const apiRepository: ResourceRepository = {
       case 'content':
       case 'roles':
       case 'settings':
+      case 'blog':
+      case 'industries':
         return adminUpdateResource(resourceKey, id, entity);
       default:
         throw new MissingBackendApiError('update', resourceKey);
+    }
+  },
+
+  async updateStatus(resourceKey, id, status) {
+    switch (resourceKey) {
+      case 'enquiries':
+      case 'drawing-requests':
+        return adminUpdateResourceStatus(resourceKey, id, status);
+      default:
+        throw new MissingBackendApiError('updateStatus', resourceKey);
     }
   },
 
@@ -140,7 +167,9 @@ export const apiRepository: ResourceRepository = {
       case 'content':
       case 'roles':
       case 'settings':
+      case 'blog':
       case 'system-logs':
+      case 'industries':
         return adminDeleteResource(resourceKey, ids);
       default:
         throw new MissingBackendApiError('delete', resourceKey);
@@ -165,26 +194,32 @@ export const apiRepository: ResourceRepository = {
       const response = await api.get('/admin/search', { params: { q: query } });
       const data = (response.data && response.data.data) || {};
       // data shape: { products, categories, brands, materials, leads, brochureLeads }
-      const components: any[] = [        'roles',
-      ];
+      const components: any[] = ['roles'];
       if (data.products) components.push(...toSearchResultsByResource('products', data.products));
-      if (data.categories) components.push(...toSearchResultsByResource('categories', data.categories));
-      if (data.subcategories) components.push(...toSearchResultsByResource('subcategories', data.subcategories));
+      if (data.categories)
+        components.push(...toSearchResultsByResource('categories', data.categories));
+      if (data.subcategories)
+        components.push(...toSearchResultsByResource('subcategories', data.subcategories));
       if (data.brands) components.push(...toSearchResultsByResource('brands', data.brands));
-      if (data.materials) components.push(...toSearchResultsByResource('materials', data.materials));
+      if (data.materials)
+        components.push(...toSearchResultsByResource('materials', data.materials));
       if (data.leads) components.push(...toSearchResultsByResource('leads', data.leads));
-      if (data.brochureLeads) components.push(...toSearchResultsByResource('leads', data.brochureLeads));
-      if (data.systemLogs) components.push(...toSearchResultsByResource('system-logs', data.systemLogs));
+      if (data.brochureLeads)
+        components.push(...toSearchResultsByResource('leads', data.brochureLeads));
+      if (data.systemLogs)
+        components.push(...toSearchResultsByResource('system-logs', data.systemLogs));
       return components.slice(0, 12);
     } catch (err) {
       // If backend search missing, fallback to per-resource listing (legacy)
     }
 
     const results = await Promise.all(
-      [...connectedResources].filter((rk) => !missingAdminApis.has(rk)).map(async (resourceKey) => {
-        const result = await this.list(resourceKey, { query, pageSize: 4 });
-        return toSearchResultsByResource(resourceKey, result.rows);
-      })
+      [...connectedResources]
+        .filter((rk) => !missingAdminApis.has(rk))
+        .map(async (resourceKey) => {
+          const result = await this.list(resourceKey, { query, pageSize: 4 });
+          return toSearchResultsByResource(resourceKey, result.rows);
+        })
     );
 
     return results.flat().slice(0, 12);
@@ -206,6 +241,7 @@ function adminResourcePath(resourceKey: string) {
 function toAdminQueryParams(params: ResourceListParams) {
   return {
     search: params.query || undefined,
+    status: params.status && params.status !== 'all' ? params.status : undefined,
     page: params.page ?? 1,
     limit: params.pageSize ?? 8,
   };
@@ -250,7 +286,7 @@ async function listAdminResource(resourceKey: string, params: ResourceListParams
   } catch (err: any) {
     // If backend reports 404 for this admin resource, mark it as missing to prevent polling spams
     if (err?.status === 404 || err?.code === 'NOT_FOUND') {
-    missingAdminApis.add(resourceKey);
+      missingAdminApis.add(resourceKey);
       // Surface a MissingBackendApiError so consumers can render a friendly "Feature not implemented yet" state
       throw new MissingBackendApiError('list', resourceKey);
     }
@@ -264,14 +300,16 @@ async function adminGetResource(resourceKey: string, id: string) {
   const response = await api.get<AdminResponse<BackendEntityDto>>(
     `${adminResourcePath(resourceKey)}/${id}`
   );
-  return toDataEntity(response.data.data);
+  const payload =
+    response.data.data && typeof response.data.data === 'object' && 'item' in response.data.data
+      ? (response.data.data as any).item
+      : response.data.data;
+  return toDataEntity(payload);
 }
 
 async function adminGetResourceRaw(resourceKey: string, id: string) {
   if (missingAdminApis.has(resourceKey)) throw new MissingBackendApiError('get', resourceKey);
-  const response = await api.get<AdminResponse<any>>(
-    `${adminResourcePath(resourceKey)}/${id}`
-  );
+  const response = await api.get<AdminResponse<any>>(`${adminResourcePath(resourceKey)}/${id}`);
   return response.data.data;
 }
 
@@ -293,6 +331,16 @@ async function adminUpdateResource(resourceKey: string, id: string, entity: Back
   return toDataEntity(response.data.data);
 }
 
+async function adminUpdateResourceStatus(resourceKey: string, id: string, status: string) {
+  if (missingAdminApis.has(resourceKey))
+    throw new MissingBackendApiError('updateStatus', resourceKey);
+  const response = await api.patch<AdminResponse<BackendEntityDto>>(
+    `${adminResourcePath(resourceKey)}/${id}/status`,
+    { status }
+  );
+  return toDataEntity(response.data.data);
+}
+
 async function adminDeleteResource(resourceKey: string, ids: string[]) {
   if (missingAdminApis.has(resourceKey)) throw new MissingBackendApiError('delete', resourceKey);
   if (ids.length === 0) return true;
@@ -306,9 +354,7 @@ async function adminDeleteResource(resourceKey: string, ids: string[]) {
     return true;
   }
 
-  await Promise.all(
-    ids.map((id) => api.delete(`${adminResourcePath(resourceKey)}/${id}`))
-  );
+  await Promise.all(ids.map((id) => api.delete(`${adminResourcePath(resourceKey)}/${id}`)));
   return true;
 }
 
@@ -321,16 +367,12 @@ async function listProducts(params: ResourceListParams) {
 }
 
 async function getProduct(id: string) {
-  const response = await api.get<AdminResponse<BackendProductDetailDto>>(
-    `/admin/products/${id}`
-  );
+  const response = await api.get<AdminResponse<BackendProductDetailDto>>(`/admin/products/${id}`);
   return toProductDetail(response.data.data);
 }
 
 async function getMaterial(id: string) {
-  const response = await api.get<AdminResponse<BackendMaterialDetailDto>>(
-    `/admin/materials/${id}`
-  );
+  const response = await api.get<AdminResponse<BackendMaterialDetailDto>>(`/admin/materials/${id}`);
 
   return toDataEntity(response.data.data.material);
 }
@@ -344,12 +386,9 @@ async function listBrands(params: ResourceListParams) {
 }
 
 async function listMachineComponents(params: ResourceListParams) {
-  const response = await api.get<AdminResponse<BackendEntityDto[]>>(
-    '/admin/machine-components',
-    {
-      params: toAdminQueryParams(params),
-    }
-  );
+  const response = await api.get<AdminResponse<BackendEntityDto[]>>('/admin/machine-components', {
+    params: toAdminQueryParams(params),
+  });
 
   return toAdminListResult(response.data.data ?? [], params, response.data.pagination);
 }

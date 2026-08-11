@@ -1,4 +1,4 @@
-import { Edit, Mail, Phone } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import PageContainer from '../components/PageContainer';
@@ -27,7 +27,7 @@ export default function ResourceDetailPage({ config }: { config: ResourceConfig 
           { to: `${config.basePath}/${id}`, label: id ?? 'Record' },
         ]}
         action={
-          item && config.key !== 'enquiries' && (
+          item && (
             <Button type="button" onClick={() => navigate(`${config.basePath}/${item.id}/edit`)}>
               <Edit />
               Edit
@@ -41,45 +41,34 @@ export default function ResourceDetailPage({ config }: { config: ResourceConfig 
         {loading && <LoadingSkeleton className="h-80 w-full" />}
         {error && <EmptyState title="Unable to load record" description={error} />}
         {!loading && !item && (
-          <EmptyState
-            title="Record not found"
-            description="The requested CMS record is unavailable."
-          />
+          <EmptyState title="Record not found" description="The requested record is unavailable." />
         )}
         {item && (
           <div className="grid gap-6 xl:grid-cols-3">
-            <DashboardCard title="Overview" className="xl:col-span-2">
+            <DashboardCard title="Record details" className="xl:col-span-2">
               <dl className="grid gap-px overflow-hidden border border-divider bg-divider sm:grid-cols-2">
-                {detailRows(item).map(([label, value]) => (
-                  <div key={label} className="bg-surface-raised p-4">
-                    <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                      {label}
-                    </dt>
-                    <dd className="mt-1 text-sm font-semibold text-charcoal">
-                      {value || 'Not assigned'}
-                    </dd>
-                  </div>
-                ))}
+                <DetailRow label="ID" value={item.id} />
+                <DetailRow label="Name" value={item.name || '—'} />
+                <DetailRow label="Company" value={item.company || '—'} />
+                <DetailRow label="Email" value={item.email || '—'} />
+                <DetailRow label="Phone" value={item.phone || '—'} />
+                <DetailRow
+                  label="Status"
+                  value={<StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>}
+                />
+                <DetailRow label="Created at" value={formatDate(item.createdAt)} />
+                <DetailRow label="Updated at" value={formatDate(item.updatedAt)} />
               </dl>
             </DashboardCard>
-            <DashboardCard title="Contact & Ownership">
+
+            <DashboardCard title="Additional">
               <div className="space-y-4">
                 <div>
-                  <p className="section-label">Owner</p>
-                  <p className="mt-1 font-semibold text-charcoal">{item.owner}</p>
+                  <p className="section-label">Description</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-charcoal-light">
+                    {item.description || item.requirement || '—'}
+                  </p>
                 </div>
-                {item.email && (
-                  <div className="flex items-center gap-2 text-sm text-charcoal-light">
-                    <Mail className="h-4 w-4 text-primary" />
-                    {item.email}
-                  </div>
-                )}
-                {item.phone && (
-                  <div className="flex items-center gap-2 text-sm text-charcoal-light">
-                    <Phone className="h-4 w-4 text-primary" />
-                    {item.phone}
-                  </div>
-                )}
               </div>
             </DashboardCard>
           </div>
@@ -89,89 +78,28 @@ export default function ResourceDetailPage({ config }: { config: ResourceConfig 
   );
 }
 
-function detailRows(item: DataEntity): [string, React.ReactNode][] {
-  const formatValue = (value: unknown): React.ReactNode => {
-    if (
-      value === null ||
-      value === undefined ||
-      value === ''
-    ) {
-      return 'Not assigned';
-    }
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="bg-surface-raised p-4">
+      <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm font-semibold text-charcoal">{value}</dd>
+    </div>
+  );
+}
 
-    if (
-      typeof value === 'string' ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    ) {
-      return String(value);
-    }
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) return '[]';
-
-      return (
-        <pre className="whitespace-pre-wrap break-all text-xs">
-          {JSON.stringify(value, null, 2)}
-        </pre>
-      );
-    }
-
-    if (typeof value === 'object') {
-      return (
-        <pre className="whitespace-pre-wrap break-all text-xs">
-          {JSON.stringify(value, null, 2)}
-        </pre>
-      );
-    }
-
-    return String(value);
-  };
-
-  const entries = Object.entries(item).map(([key, value]) => [
-    key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/[_-]/g, ' ')
-      .replace(/^./, s => s.toUpperCase()),
-    formatValue(value),
-  ] as [string, React.ReactNode]);
-
-  const priority = [
-    'id',
-    'status',
-    'name',
-    'company',
-    'email',
-    'mobileNumber',
-    'phone',
-    'product',
-    'downloads',
-    'verifiedAt',
-    'createdAt',
-    'updatedAt',
-  ];
-
-  entries.sort((a, b) => {
-    const ai = priority.findIndex(k =>
-      a[0].toLowerCase().includes(k.toLowerCase())
-    );
-
-    const bi = priority.findIndex(k =>
-      b[0].toLowerCase().includes(k.toLowerCase())
-    );
-
-    if (ai === -1 && bi === -1) return a[0].localeCompare(b[0]);
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-
-    return ai - bi;
-  });
-
-  return entries;
+function formatDate(value?: string) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function statusTone(status: DataEntity['status']) {
-  if (status === 'Published' || status === 'Active' || status === 'Closed') return 'green';
-  if (status === 'Review' || status === 'Pending' || status === 'Draft') return 'amber';
+  if (status === 'Published' || status === 'Active' || status === 'Closed' || status === 'Resolved')
+    return 'green';
+  if (status === 'Review' || status === 'Pending' || status === 'Draft' || status === 'In Progress')
+    return 'amber';
   return 'neutral';
 }

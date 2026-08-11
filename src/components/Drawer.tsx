@@ -11,7 +11,7 @@ export default function Drawer({
   className,
 }: {
   open: boolean;
-  title?: string;
+  title?: React.ReactNode;
   children?: React.ReactNode;
   onClose: () => void;
   side?: 'left' | 'right';
