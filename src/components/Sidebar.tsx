@@ -10,6 +10,7 @@ import {
   PackageCheck,
   Shield,
 } from 'lucide-react';
+import polyribLogo from '../assets/polyrib.png';
 import { NavLink, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { sidebarSections, type SidebarItem } from '../constants/navigation';
@@ -49,34 +50,36 @@ export default function Sidebar({
         mobile ? 'h-full w-full border-r-0' : 'hidden lg:flex'
       )}
     >
-      <div className="flex h-20 items-center gap-3 border-b border-divider px-4">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-primary font-heading text-sm font-bold text-primary-foreground shadow-card">
-            KP
-          </div>
-          {!compact && (
-            <div className="min-w-0">
-              <div className="truncate font-heading text-lg font-bold text-charcoal">
-                Khanna Polyrib
-              </div>
-              <div className="truncate text-[10px] font-bold uppercase tracking-widest text-primary">
-                Manufacturing CMS
-              </div>
-            </div>
+      <div className="flex h-20 border-b border-divider">
+        {/* POLYRIB Logo */}
+        <div
+          className={clsx(
+            'flex min-w-0 flex-1 items-center overflow-hidden',
+            compact ? 'justify-center px-2' : 'px-3'
           )}
+        >
+          <img
+            src={polyribLogo}
+            alt="Khanna Polyrib Pvt. Ltd."
+            className={clsx('block object-contain', compact ? 'h-12 w-12' : 'h-full w-full')}
+          />
         </div>
+
+        {/* Collapse / Expand Button */}
         {!mobile && (
-          <button
-            type="button"
-            onClick={() => onCollapseChange(!collapsed)}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-charcoal-light transition-colors hover:border-primary hover:text-primary"
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+          <div className="flex w-[52px] shrink-0 items-center justify-center">
+            <button
+              type="button"
+              onClick={() => onCollapseChange(!collapsed)}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="flex h-9 w-9 items-center justify-center border border-border text-charcoal-light transition-colors hover:border-primary hover:text-primary"
+            >
+              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </button>
+          </div>
         )}
       </div>
-
+      {/*
       <div className="border-b border-divider px-4 py-4">
         <div
           className={clsx(
@@ -99,6 +102,8 @@ export default function Sidebar({
           </div>
         </div>
       </div>
+
+         */}
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 industrial-scrollbar">
         <div className="space-y-6">
@@ -128,7 +133,7 @@ export default function Sidebar({
           ))}
         </div>
       </nav>
-
+      {/*
       <div className="border-t border-divider p-4">
         <div className={clsx('grid gap-2', compact ? 'grid-cols-1' : 'grid-cols-3')}>
           {[
@@ -161,6 +166,7 @@ export default function Sidebar({
           </div>
         )}
       </div>
+      */}
     </aside>
   );
 }

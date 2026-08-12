@@ -28,7 +28,9 @@ export type ResourceTableColumn<T> = {
   className?: string;
 };
 
-export default function ResourceTable<T extends { id: string; status?: string }>({
+export default function ResourceTable<
+  T extends { id?: string; _id?: string; slug?: string; name?: string; status?: string },
+>({
   rows,
   columns,
   loading,
@@ -40,12 +42,15 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   onDuplicate,
   onArchive,
   onRestore,
+  renderRowActions,
   page: controlledPage,
   totalPages: controlledTotalPages,
   sortKey,
   sortDirection,
   onPageChange,
   onSortChange,
+  desktopContainerClassName,
+  desktopTableClassName,
 }: {
   rows: T[];
   columns: ResourceTableColumn<T>[];
@@ -58,12 +63,15 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   onDuplicate?: (row: T) => void;
   onArchive?: (ids: string[]) => void;
   onRestore?: (ids: string[]) => void;
+  renderRowActions?: (row: T, rowId: string) => React.ReactNode;
   page?: number;
   totalPages?: number;
   sortKey?: string;
   sortDirection?: SortDirection;
   onPageChange?: (page: number) => void;
   onSortChange?: (key: string) => void;
+  desktopContainerClassName?: string;
+  desktopTableClassName?: string;
 }) {
   const [internalPage, setInternalPage] = React.useState(1);
   const [selected, setSelected] = React.useState<string[]>([]);
@@ -71,6 +79,12 @@ export default function ResourceTable<T extends { id: string; status?: string }>
     key: string;
     direction: SortDirection;
   }>({ key: String(columns[0]?.key ?? 'id'), direction: 'asc' });
+  const hasSelection = Boolean(onDelete);
+
+  // Helper to obtain a stable id for rows. Falls back to _id, slug, name, or provided index.
+  const getRowId = (row: T, fallback?: number) =>
+    String(row.id ?? row._id ?? (row as any).slug ?? (row as any).name ?? fallback ?? '');
+
   const controlled = Boolean(onPageChange || onSortChange);
   const page = controlledPage ?? internalPage;
   const sort = {
@@ -108,7 +122,8 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   const pageRows = controlled
     ? sortedRows
     : sortedRows.slice((page - 1) * pageSize, page * pageSize);
-  const allPageSelected = pageRows.length > 0 && pageRows.every((row) => selected.includes(row.id));
+  const allPageSelected =
+    pageRows.length > 0 && pageRows.every((row, idx) => selected.includes(getRowId(row, idx)));
 
   const toggleSort = (column: ResourceTableColumn<T>) => {
     if (!column.sortable) return;
@@ -125,8 +140,8 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   const toggleAll = () => {
     setSelected((current) =>
       allPageSelected
-        ? current.filter((id) => !pageRows.some((row) => row.id === id))
-        : [...new Set([...current, ...pageRows.map((row) => row.id)])]
+        ? current.filter((id) => !pageRows.some((row, idx) => getRowId(row, idx) === id))
+        : [...new Set([...current, ...pageRows.map((row, idx) => getRowId(row, idx))])]
     );
   };
 
@@ -141,6 +156,15 @@ export default function ResourceTable<T extends { id: string; status?: string }>
   }
 
   if (error) {
+    if (error === 'Feature not implemented yet') {
+      return (
+        <EmptyState
+          title="Feature not implemented yet"
+          description="This admin endpoint is not implemented in the backend yet. Refresh the page after the backend is updated."
+        />
+      );
+    }
+
     return <EmptyState title="Records could not be loaded" description={error} />;
   }
 
@@ -155,7 +179,7 @@ export default function ResourceTable<T extends { id: string; status?: string }>
 
   return (
     <div className="space-y-3">
-      {selected.length > 0 && (
+      {hasSelection && selected.length > 0 && (
         <div className="flex flex-col gap-3 border border-primary/20 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-charcoal">{selected.length} selected</p>
           <button
@@ -169,19 +193,30 @@ export default function ResourceTable<T extends { id: string; status?: string }>
         </div>
       )}
 
-      <div className="hidden overflow-hidden border border-border bg-surface-raised shadow-card lg:block">
-        <table className="w-full border-collapse text-left">
+      <div
+        className={clsx(
+          'hidden overflow-x-auto border border-border bg-surface-raised shadow-card lg:block',
+          desktopContainerClassName
+        )}
+      >
+        <table
+          className={clsx('w-full min-w-[1120px] border-collapse text-left', desktopTableClassName)}
+        >
           <thead>
             <tr className="border-b border-divider bg-surface-subtle">
-              <th className="w-12 px-4 py-3">
-                <input
-                  type="checkbox"
-                  aria-label="Select visible rows"
-                  checked={allPageSelected}
-                  onChange={toggleAll}
-                  className="h-4 w-4 accent-[hsl(var(--primary))]"
-                />
-              </th>
+              {hasSelection ? (
+                <th className="w-12 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    aria-label="Select visible rows"
+                    checked={allPageSelected}
+                    onChange={toggleAll}
+                    className="h-4 w-4 accent-[hsl(var(--primary))]"
+                  />
+                </th>
+              ) : (
+                <th className="w-12 px-4 py-3" />
+              )}
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
@@ -213,36 +248,119 @@ export default function ResourceTable<T extends { id: string; status?: string }>
                   </button>
                 </th>
               ))}
-              <th className="w-12 px-4 py-3" />
+              {renderRowActions ? (
+                <th className="w-12 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Actions
+                </th>
+              ) : (
+                <th className="w-12 px-4 py-3" />
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-divider">
-            {pageRows.map((row) => (
-              <tr key={row.id} className="transition-colors duration-200 hover:bg-surface-subtle">
-                <td className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    aria-label={`Select ${row.id}`}
-                    checked={selected.includes(row.id)}
+            {pageRows.map((row, index) => {
+              const rowId = getRowId(row, index);
+
+              return (
+                <tr key={rowId} className="transition-colors duration-200 hover:bg-surface-subtle">
+                  {hasSelection ? (
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${rowId}`}
+                        checked={selected.includes(rowId)}
+                        onChange={() =>
+                          setSelected((current) =>
+                            current.includes(rowId)
+                              ? current.filter((id) => id !== rowId)
+                              : [...current, rowId]
+                          )
+                        }
+                        className="h-4 w-4 accent-[hsl(var(--primary))]"
+                      />
+                    </td>
+                  ) : (
+                    <td className="px-4 py-3" />
+                  )}
+                  {columns.map((column) => (
+                    <td
+                      key={String(column.key)}
+                      className={clsx('px-4 py-3 text-sm', column.className)}
+                    >
+                      {column.render(row)}
+                    </td>
+                  ))}
+                  <td className="px-4 py-3">
+                    {renderRowActions ? (
+                      renderRowActions(row, rowId)
+                    ) : (
+                      <ActionMenu
+                        items={[
+                          {
+                            label: 'View',
+                            icon: <Eye className="h-4 w-4" />,
+                            onSelect: () => onView?.(row),
+                          },
+                          {
+                            label: 'Edit',
+                            icon: <Pencil className="h-4 w-4" />,
+                            onSelect: () => onEdit?.(row),
+                          },
+                          {
+                            label: 'Duplicate',
+                            icon: <Copy className="h-4 w-4" />,
+                            onSelect: () => onDuplicate?.(row),
+                          },
+                          row.status === 'Archived'
+                            ? {
+                                label: 'Restore',
+                                icon: <RotateCcw className="h-4 w-4" />,
+                                onSelect: () => onRestore?.([rowId]),
+                              }
+                            : {
+                                label: 'Archive',
+                                icon: <Archive className="h-4 w-4" />,
+                                onSelect: () => onArchive?.([rowId]),
+                              },
+                          {
+                            label: 'Delete',
+                            icon: <Trash2 className="h-4 w-4" />,
+                            danger: true,
+                            onSelect: () => onDelete?.([rowId]),
+                          },
+                        ]}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-3 lg:hidden">
+        {pageRows.map((row, index) => {
+          const rowId = getRowId(row, index);
+
+          return (
+            <Card key={rowId} className="p-4">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                {hasSelection && (
+                  <Checkbox
+                    checked={selected.includes(rowId)}
                     onChange={() =>
                       setSelected((current) =>
-                        current.includes(row.id)
-                          ? current.filter((id) => id !== row.id)
-                          : [...current, row.id]
+                        current.includes(rowId)
+                          ? current.filter((id) => id !== rowId)
+                          : [...current, rowId]
                       )
                     }
-                    className="h-4 w-4 accent-[hsl(var(--primary))]"
                   />
-                </td>
-                {columns.map((column) => (
-                  <td
-                    key={String(column.key)}
-                    className={clsx('px-4 py-3 text-sm', column.className)}
-                  >
-                    {column.render(row)}
-                  </td>
-                ))}
-                <td className="px-4 py-3">
+                )}
+                {renderRowActions ? (
+                  renderRowActions(row, rowId)
+                ) : (
                   <ActionMenu
                     items={[
                       {
@@ -264,93 +382,38 @@ export default function ResourceTable<T extends { id: string; status?: string }>
                         ? {
                             label: 'Restore',
                             icon: <RotateCcw className="h-4 w-4" />,
-                            onSelect: () => onRestore?.([row.id]),
+                            onSelect: () => onRestore?.([rowId]),
                           }
                         : {
                             label: 'Archive',
                             icon: <Archive className="h-4 w-4" />,
-                            onSelect: () => onArchive?.([row.id]),
+                            onSelect: () => onArchive?.([rowId]),
                           },
                       {
                         label: 'Delete',
                         icon: <Trash2 className="h-4 w-4" />,
                         danger: true,
-                        onSelect: () => onDelete?.([row.id]),
+                        onSelect: () => onDelete?.([rowId]),
                       },
                     ]}
                   />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="grid gap-3 lg:hidden">
-        {pageRows.map((row) => (
-          <Card key={row.id} className="p-4">
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <Checkbox
-                checked={selected.includes(row.id)}
-                onChange={() =>
-                  setSelected((current) =>
-                    current.includes(row.id)
-                      ? current.filter((id) => id !== row.id)
-                      : [...current, row.id]
-                  )
-                }
-              />
-              <ActionMenu
-                items={[
-                  {
-                    label: 'View',
-                    icon: <Eye className="h-4 w-4" />,
-                    onSelect: () => onView?.(row),
-                  },
-                  {
-                    label: 'Edit',
-                    icon: <Pencil className="h-4 w-4" />,
-                    onSelect: () => onEdit?.(row),
-                  },
-                  {
-                    label: 'Duplicate',
-                    icon: <Copy className="h-4 w-4" />,
-                    onSelect: () => onDuplicate?.(row),
-                  },
-                  row.status === 'Archived'
-                    ? {
-                        label: 'Restore',
-                        icon: <RotateCcw className="h-4 w-4" />,
-                        onSelect: () => onRestore?.([row.id]),
-                      }
-                    : {
-                        label: 'Archive',
-                        icon: <Archive className="h-4 w-4" />,
-                        onSelect: () => onArchive?.([row.id]),
-                      },
-                  {
-                    label: 'Delete',
-                    icon: <Trash2 className="h-4 w-4" />,
-                    danger: true,
-                    onSelect: () => onDelete?.([row.id]),
-                  },
-                ]}
-              />
-            </div>
-            <dl className="grid gap-3">
-              {columns.map((column) => (
-                <div key={String(column.key)} className="flex items-start justify-between gap-4">
-                  <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {column.header}
-                  </dt>
-                  <dd className="min-w-0 text-right text-sm text-charcoal-light">
-                    {column.render(row)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </Card>
-        ))}
+                )}
+              </div>
+              <dl className="grid gap-3">
+                {columns.map((column) => (
+                  <div key={String(column.key)} className="flex items-start justify-between gap-4">
+                    <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {column.header}
+                    </dt>
+                    <dd className="min-w-0 text-right text-sm text-charcoal-light">
+                      {column.render(row)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+          );
+        })}
       </div>
 
       <Pagination

@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
+import { uploadService } from '../services/uploadService';
 import PageContainer from '../components/PageContainer';
 import DashboardCard from '../components/DashboardCard';
 import Button from '../components/Button';
@@ -77,6 +78,17 @@ export default function ResourceFormPage({
         createdAt: item?.createdAt ?? '2026-08-04',
         updatedAt: '2026-08-04',
       };
+
+      if (values.image instanceof File) {
+        const asset = await uploadService.uploadImage(values.image, { resourceKey: config.key });
+        (entity as DataEntity & { image?: string }).image = asset.url;
+      }
+
+      if (values.file instanceof File) {
+        const asset = await uploadService.uploadPdf(values.file, { resourceKey: config.key });
+        (entity as DataEntity & { file?: string }).file = asset.url;
+      }
+
       await save(entity);
       setSuccess(true);
       toast.push('Record saved successfully.', 'success');

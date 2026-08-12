@@ -8,10 +8,20 @@ const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen min-h-0 overflow-hidden bg-background">
+      {/* Desktop Sidebar */}
       <Sidebar collapsed={collapsed} onCollapseChange={setCollapsed} />
 
-      <Drawer open={drawerOpen} title="Khanna Polyrib" onClose={() => setDrawerOpen(false)}>
+      {/* Mobile Drawer */}
+      <Drawer
+        open={drawerOpen}
+        title={
+          <span className="font-heading text-lg font-bold tracking-tight text-primary">
+            Khanna Polyrib Pvt. Ltd.
+          </span>
+        }
+        onClose={() => setDrawerOpen(false)}
+      >
         <Sidebar
           collapsed={false}
           onCollapseChange={setCollapsed}
@@ -20,9 +30,15 @@ const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
         />
       </Drawer>
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      {/* Main Application Area */}
+      <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
+        {/* STICKY HEADER */}
         <Header onMenuClick={() => setDrawerOpen(true)} />
-        <main className="min-w-0 flex-1 overflow-y-auto industrial-scrollbar">{children}</main>
+
+        {/* ONLY THIS AREA SCROLLS */}
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden industrial-scrollbar">
+          {children}
+        </main>
       </div>
     </div>
   );

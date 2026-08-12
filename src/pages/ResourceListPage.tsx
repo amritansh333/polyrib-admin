@@ -12,6 +12,7 @@ import ResourceTable, { type ResourceTableColumn } from '../components/ResourceT
 import MetricCard from '../components/MetricCard';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import useResourceCollection from '../hooks/useResourceCollection';
+import { useRepository } from '../repositories/RepositoryProvider';
 import { useToast } from '../providers/ToastProvider';
 import { downloadCsv } from '../utils/csv';
 import type { DataEntity, ResourceConfig } from '../types/admin';
@@ -19,6 +20,7 @@ import type { DataEntity, ResourceConfig } from '../types/admin';
 export default function ResourceListPage({ config }: { config: ResourceConfig }) {
   const navigate = useNavigate();
   const toast = useToast();
+  const repository = useRepository();
   const collection = useResourceCollection(config.key);
   const [deleteIds, setDeleteIds] = React.useState<string[]>([]);
 
@@ -34,7 +36,7 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
   const columns: ResourceTableColumn<DataEntity>[] = [
     {
       key: 'name',
-      header: config.key === 'users' || config.key === 'leads' ? 'Name / Company' : 'Record',
+      header: config.key === 'users' ? 'Name / Company' : 'Record',
       sortable: true,
       render: (row) => (
         <div>
@@ -51,7 +53,7 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
     },
     {
       key: 'owner',
-      header: config.key === 'leads' ? 'Source' : 'Owner',
+      header: 'Owner',
       sortable: true,
       render: (row) => row.source ?? row.owner,
     },
@@ -100,7 +102,9 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
         meta={
           <>
             <StatusBadge tone="blue">{collection.total} records</StatusBadge>
-            <StatusBadge tone="green">Interactive</StatusBadge>
+            <StatusBadge tone={repository.source === 'api' ? 'green' : 'neutral'}>
+              {repository.source === 'api' ? 'API Repository' : 'Mock Repository'}
+            </StatusBadge>
           </>
         }
       />
@@ -110,7 +114,11 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
           <MetricCard
             title="Total Records"
             value={String(collection.total)}
-            description="Loaded from mock repository."
+            description={
+              repository.source === 'api'
+                ? 'Loaded from backend API.'
+                : 'Loaded from mock repository.'
+            }
           />
           <MetricCard
             title="Published / Active"
@@ -173,15 +181,25 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
             void runAction(() => collection.restore(ids), `${ids.length} record restored.`)
           }
         />
+
         <ConfirmationDialog
           open={deleteIds.length > 0}
           title="Delete record"
-          description="This removes the selected mock record from the local admin repository."
+          description={
+            repository.source === 'api'
+              ? 'This removes the selected record from the backend admin repository.'
+              : 'This removes the selected mock record from the local admin repository.'
+          }
           confirmLabel={collection.actionLoading ? 'Deleting...' : 'Delete'}
           danger
           onClose={() => setDeleteIds([])}
           onConfirm={() =>
             void runAction(async () => {
+              if (deleteIds.length !== 1) {
+                throw new Error(
+                  'Bulk delete is not allowed for this resource. Select a single record to delete.'
+                );
+              }
               await collection.remove(deleteIds);
             }, `${deleteIds.length} record deleted.`)
           }
@@ -191,9 +209,18 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
   );
 }
 
+function formatDate(value?: string) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function statusTone(status: DataEntity['status']) {
-  if (status === 'Published' || status === 'Active' || status === 'Closed') return 'green';
-  if (status === 'Review' || status === 'Pending' || status === 'Draft') return 'amber';
+  if (status === 'Published' || status === 'Active' || status === 'Closed' || status === 'Resolved')
+    return 'green';
+  if (status === 'Review' || status === 'Pending' || status === 'Draft' || status === 'In Progress')
+    return 'amber';
   if (status === 'Archived') return 'neutral';
   return 'blue';
 }

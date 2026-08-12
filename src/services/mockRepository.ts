@@ -104,6 +104,20 @@ export const mockRepository: ResourceRepository = {
     return saveEntity(resourceKey, { ...entity, id });
   },
 
+  async updateStatus(resourceKey: string, id: string, status: DataEntity['status']) {
+    const store = cloneStore();
+    const rows = store[resourceKey] ?? [];
+    let updatedEntity: DataEntity | undefined;
+    store[resourceKey] = rows.map((row) => {
+      if (row.id !== id) return row;
+      const nextRow: DataEntity = { ...row, status, updatedAt: today() };
+      updatedEntity = nextRow;
+      return nextRow;
+    });
+    saveStore(store);
+    return delay(updatedEntity ?? (rows.find((row) => row.id === id) as DataEntity));
+  },
+
   async delete(resourceKey: string, ids: string[]) {
     const store = cloneStore();
     store[resourceKey] = (store[resourceKey] ?? []).filter((row) => !ids.includes(row.id));
@@ -205,17 +219,16 @@ function restoreStatus(resourceKey: string): DataEntity['status'] {
     [
       'brands',
       'media-library',
-      'brochure-downloads',
+      'leads',
       'users',
       'roles',
-      'settings',
       'system-logs',
       'support',
     ].includes(resourceKey)
   ) {
     return 'Active';
   }
-  if (['leads', 'drawing-requests', 'quote-requests'].includes(resourceKey)) return 'Pending';
+  if (['leads', 'drawing-requests', 'enquiries'].includes(resourceKey)) return 'Pending';
   return 'Published';
 }
 

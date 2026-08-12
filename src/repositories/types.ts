@@ -9,6 +9,8 @@ export type ResourceListParams = {
   pageSize?: number;
   sortKey?: keyof DataEntity;
   sortDirection?: SortDirection;
+  limit?: number;
+  experience?: string;
 };
 
 export type ResourceListResult = {
@@ -30,6 +32,7 @@ export type ResourceRepository = {
   get(resourceKey: string, id: string): Promise<DataEntity | null>;
   create(resourceKey: string, entity: DataEntity): Promise<DataEntity>;
   update(resourceKey: string, id: string, entity: DataEntity): Promise<DataEntity>;
+  updateStatus(resourceKey: string, id: string, status: string): Promise<DataEntity>;
   delete(resourceKey: string, ids: string[]): Promise<boolean>;
   duplicate(resourceKey: string, id: string): Promise<DataEntity | null>;
   archive(resourceKey: string, ids: string[]): Promise<boolean>;

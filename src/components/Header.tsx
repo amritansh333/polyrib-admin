@@ -15,7 +15,6 @@ import {
   Menu,
   PackagePlus,
   PenTool,
-  Settings,
   User,
 } from 'lucide-react';
 
@@ -47,7 +46,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-divider bg-surface-raised/95 shadow-header backdrop-blur-sm">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-divider bg-surface-raised/95 shadow-header backdrop-blur-sm">
       <div className="flex h-16 min-w-0 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <button
           type="button"
@@ -64,9 +63,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
             <span>/</span>
             <span className="text-charcoal">Dashboard</span>
           </nav>
-          <div className="mt-0.5 font-heading text-lg font-semibold text-charcoal">
-            Website Operations
-          </div>
+          <div className="mt-0.5 font-heading text-lg font-bold text-charcoal">ADMIN PANEL</div>
         </div>
 
         <div className="relative min-w-0 flex-1 lg:max-w-md" ref={searchRef}>
@@ -138,7 +135,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
             <div className="absolute right-0 top-12 z-30 w-60 border border-border bg-surface-raised py-1 shadow-card-hover">
               {[
                 { label: 'New product draft', icon: PackagePlus, to: '/products/new' },
-                { label: 'Review quote requests', icon: FileText, to: '/quote-requests' },
+                { label: 'Review enquiries', icon: FileText, to: '/enquiries' },
                 { label: 'Open drawing queue', icon: PenTool, to: '/drawing-requests' },
               ].map((item) => (
                 <button
@@ -194,7 +191,6 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
                 title="System check complete"
                 description="Website, storage, and database services are healthy."
                 time="1h"
-                icon={<Settings className="h-4 w-4" />}
               />
             </div>
           )}
@@ -236,13 +232,10 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
               <button
                 type="button"
                 onClick={() => {
-                  navigate('/settings');
                   setProfileOpen(false);
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-charcoal-light hover:bg-surface-subtle hover:text-primary"
               >
-                <Settings className="h-4 w-4" />
-                Account Settings
               </button>
               <button
                 type="button"

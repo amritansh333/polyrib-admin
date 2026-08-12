@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { UserProfile } from './types';
-import * as mock from './mockAuth';
+import { authService } from '../services/authService';
 
 const STORAGE_KEY = 'polyrib_admin_auth_user_v1';
 
@@ -8,6 +8,7 @@ interface AuthState {
   user: UserProfile | null;
   loading: boolean;
   remember: boolean;
+  initialized: boolean;
   init: () => Promise<void>;
   login: (email: string, password: string, remember?: boolean) => Promise<boolean>;
   logout: () => void;
@@ -17,31 +18,40 @@ interface AuthState {
 
 // Typed set/get helpers for Zustand to avoid implicit any
 type SetFn = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>)) => void;
-export const useAuthStore = create<AuthState>((set: SetFn) => ({
+// include get to inspect current state inside init
+export const useAuthStore = create<AuthState>((set: SetFn, get) => ({
   user: null,
-  loading: false,
+  loading: true,
   remember: false,
+  initialized: false,
   init: async () => {
+    // avoid re-running init
+    if (get().initialized) return;
     set({ loading: true });
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const u = JSON.parse(raw) as UserProfile;
-        set({ user: u, remember: true });
+      // try to fetch current user from backend
+      const resp = await authService.getCurrentUser();
+      if (resp) {
+        set({ user: resp, remember: true });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(resp));
+        } catch {}
       }
     } catch {
       // ignore
     } finally {
-      set({ loading: false });
+      set({ loading: false, initialized: true });
     }
   },
   login: async (email: string, password: string, remember = false) => {
     set({ loading: true });
     try {
-      const user = await mock.authenticate(email, password);
-      if (user) {
-        set({ user, remember });
-        if (remember) localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      const session = await authService.login(email, password, remember);
+      if (session && session.user) {
+        set({ user: session.user, remember });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(session.user));
+        } catch {}
         return true;
       }
       return false;
@@ -54,12 +64,15 @@ export const useAuthStore = create<AuthState>((set: SetFn) => ({
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
+    try {
+      authService.logout();
+    } catch {}
   },
   sendReset: async (email: string) => {
     set({ loading: true });
     try {
-      const ok = await mock.sendResetEmail(email);
-      return ok;
+      // Not implemented on backend
+      return false;
     } finally {
       set({ loading: false });
     }
@@ -67,8 +80,8 @@ export const useAuthStore = create<AuthState>((set: SetFn) => ({
   resetPassword: async (token: string, newPassword: string) => {
     set({ loading: true });
     try {
-      const ok = await mock.resetPassword(token, newPassword);
-      return ok;
+      // Not implemented on backend
+      return false;
     } finally {
       set({ loading: false });
     }

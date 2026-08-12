@@ -1,6 +1,6 @@
 import {
   BookOpen,
-  Boxes,
+  Building2,
   FileDown,
   FileText,
   FolderTree,
@@ -11,11 +11,8 @@ import {
   Package,
   PenTool,
   ScrollText,
-  Settings,
   Tags,
   UserCog,
-  Users,
-  Wrench,
 } from 'lucide-react';
 import type { DataEntity, ResourceConfig } from '../types/admin';
 
@@ -56,6 +53,34 @@ export const resources: ResourceConfig[] = [
     ],
   },
   {
+    key: 'industries',
+    title: 'Industries',
+    eyebrow: 'Catalog',
+    description: 'Manage industry classifications, SEO copy, and public-market filters.',
+    basePath: '/industries',
+    createPath: '/industries/new',
+    newLabel: 'New Industry',
+    searchPlaceholder: 'Search industries...',
+    icon: Building2,
+    filters: [
+      { label: 'All industries', value: 'all' },
+      { label: 'Published', value: 'Published' },
+      { label: 'Review', value: 'Review' },
+    ],
+  },
+  {
+    key: 'subcategories',
+    title: 'Subcategories',
+    eyebrow: 'Catalog',
+    description: 'Subcategory landing groups within categories.',
+    basePath: '/subcategories',
+    createPath: '/subcategories/new',
+    newLabel: 'New Subcategory',
+    searchPlaceholder: 'Search subcategories...',
+    icon: FolderTree,
+    filters: [{ label: 'All subcategories', value: 'all' }],
+  },
+  {
     key: 'brands',
     title: 'Brands',
     eyebrow: 'Brand Portfolio',
@@ -88,34 +113,6 @@ export const resources: ResourceConfig[] = [
     ],
   },
   {
-    key: 'machine-components',
-    title: 'Machine Components',
-    eyebrow: 'Product Division',
-    description: 'Manage machined, formed, and application-ready industrial components.',
-    basePath: '/machine-components',
-    searchPlaceholder: 'Search machine components...',
-    icon: Wrench,
-    filters: [
-      { label: 'All components', value: 'all' },
-      { label: 'Published', value: 'Published' },
-      { label: 'Review', value: 'Review' },
-    ],
-  },
-  {
-    key: 'semi-finished-products',
-    title: 'Semi Finished Products',
-    eyebrow: 'Product Division',
-    description: 'Manage sheet, block, rod, tube, coil, roll, and welding rod records.',
-    basePath: '/semi-finished-products',
-    searchPlaceholder: 'Search semi finished products...',
-    icon: Boxes,
-    filters: [
-      { label: 'All products', value: 'all' },
-      { label: 'Published', value: 'Published' },
-      { label: 'Draft', value: 'Draft' },
-    ],
-  },
-  {
     key: 'media-library',
     title: 'Media Library',
     eyebrow: 'Assets',
@@ -134,27 +131,13 @@ export const resources: ResourceConfig[] = [
   {
     key: 'leads',
     title: 'Leads',
-    eyebrow: 'Commercial',
-    description: 'Review incoming buyer enquiries and qualification workflow.',
-    basePath: '/leads',
-    searchPlaceholder: 'Search companies, contacts, products...',
-    icon: Users,
-    filters: [
-      { label: 'All leads', value: 'all' },
-      { label: 'New', value: 'Pending' },
-      { label: 'Closed', value: 'Closed' },
-    ],
-  },
-  {
-    key: 'brochure-downloads',
-    title: 'Brochure Downloads',
     eyebrow: 'Lead Intelligence',
     description: 'Track verified document access and product interest signals.',
-    basePath: '/brochure-downloads',
+    basePath: '/leads',
     searchPlaceholder: 'Search downloads...',
     icon: FileDown,
     filters: [
-      { label: 'All downloads', value: 'all' },
+      { label: 'All leads', value: 'all' },
       { label: 'Active', value: 'Active' },
     ],
   },
@@ -168,24 +151,31 @@ export const resources: ResourceConfig[] = [
     icon: PenTool,
     filters: [
       { label: 'All drawings', value: 'all' },
-      { label: 'Pending', value: 'Pending' },
-      { label: 'Closed', value: 'Closed' },
+      { label: 'New', value: 'NEW' },
+      { label: 'Under review', value: 'UNDER_REVIEW' },
+      { label: 'Quoted', value: 'QUOTED' },
+      { label: 'Completed', value: 'COMPLETED' },
+      { label: 'Rejected', value: 'REJECTED' },
     ],
   },
   {
-    key: 'quote-requests',
-    title: 'Quote Requests',
+    key: 'enquiries',
+    title: 'Enquiries',
     eyebrow: 'Sales Queue',
-    description: 'Manage quotation requests from product, material, and contact pages.',
-    basePath: '/quote-requests',
-    searchPlaceholder: 'Search quote requests...',
+    description: 'Customer contact enquiries submitted via the website contact and quote forms.',
+    basePath: '/enquiries',
+    searchPlaceholder: 'Search enquiries...',
     icon: FileText,
     filters: [
-      { label: 'All quotes', value: 'all' },
-      { label: 'Pending', value: 'Pending' },
+      { label: 'All enquiries', value: 'all' },
+      { label: 'New', value: 'New' },
+      { label: 'Contacted', value: 'Contacted' },
+      { label: 'In Progress', value: 'In Progress' },
+      { label: 'Resolved', value: 'Resolved' },
       { label: 'Closed', value: 'Closed' },
     ],
   },
+
   {
     key: 'content',
     title: 'Website Content',
@@ -198,6 +188,22 @@ export const resources: ResourceConfig[] = [
       { label: 'All pages', value: 'all' },
       { label: 'Published', value: 'Published' },
       { label: 'Review', value: 'Review' },
+    ],
+  },
+  {
+    key: 'blog',
+    title: 'Blog & Gallery',
+    eyebrow: 'Website Content',
+    description: 'Manage blog articles, galleries, featured images, and publication settings.',
+    basePath: '/blog',
+    createPath: '/blog/new',
+    newLabel: 'New Post',
+    searchPlaceholder: 'Search blog posts, categories, tags...',
+    icon: ScrollText,
+    filters: [
+      { label: 'All posts', value: 'all' },
+      { label: 'Published', value: 'published' },
+      { label: 'Draft', value: 'draft' },
     ],
   },
   {
@@ -226,19 +232,6 @@ export const resources: ResourceConfig[] = [
     icon: LockKeyhole,
     filters: [
       { label: 'All roles', value: 'all' },
-      { label: 'Active', value: 'Active' },
-    ],
-  },
-  {
-    key: 'settings',
-    title: 'Settings',
-    eyebrow: 'System',
-    description: 'Configure admin preferences, notifications, publishing, and security controls.',
-    basePath: '/settings',
-    searchPlaceholder: 'Search settings...',
-    icon: Settings,
-    filters: [
-      { label: 'All settings', value: 'all' },
       { label: 'Active', value: 'Active' },
     ],
   },
@@ -452,90 +445,6 @@ export const mockData: Record<string, DataEntity[]> = {
       'PA6'
     ),
   ],
-  'machine-components': [
-    entity(
-      'MC-501',
-      'RIPLA Cutting Board',
-      'Impact resistant industrial cutting board for food processing.',
-      'Published',
-      'Machine Components',
-      'Cutting Boards',
-      'RIPLA',
-      'PP'
-    ),
-    entity(
-      'MC-502',
-      'Chain Guide Profile',
-      'Machined UHMW PE guide profile for conveyors.',
-      'Review',
-      'Engineering',
-      'Strips & Profiles',
-      'POLYRIB V',
-      'UHMW PE'
-    ),
-    entity(
-      'MC-503',
-      'Vacuum Formed Plastic Part',
-      'Custom formed thermoplastic housing for industrial equipment.',
-      'Published',
-      'Engineering',
-      'Vacuum Formed Parts',
-      'POLYRIB H',
-      'HDPE'
-    ),
-    entity(
-      'MC-504',
-      'ARETE Hopper Liner',
-      'Low-friction liner component for high volume discharge.',
-      'Published',
-      'Machine Components',
-      'Liners',
-      'ARETE',
-      'UHMW PE'
-    ),
-  ],
-  'semi-finished-products': [
-    entity(
-      'SF-601',
-      'Compression Moulded Sheet',
-      'Heavy gauge sheet stock for machining and fabrication.',
-      'Published',
-      'Catalog Team',
-      'Sheets & Blocks',
-      'POLYRIB V',
-      'UHMW PE'
-    ),
-    entity(
-      'SF-602',
-      'Extruded HDPE Rod',
-      'Standard diameter HDPE rod for industrial fabrication.',
-      'Published',
-      'Catalog Team',
-      'Rods & Tubes',
-      'POLYRIB H',
-      'HDPE'
-    ),
-    entity(
-      'SF-603',
-      'Polypropylene Welding Rod',
-      'PP welding rod for tank fabrication and repair.',
-      'Draft',
-      'Catalog Team',
-      'Welding Rods',
-      'POLYRIB P',
-      'PP'
-    ),
-    entity(
-      'SF-604',
-      'Polycarbonate Roll',
-      'Roll stock for glazing and formed applications.',
-      'Review',
-      'Catalog Team',
-      'Coils & Rolls',
-      'PCCLEAR',
-      'PC'
-    ),
-  ],
   'media-library': [
     media(
       'A-701',
@@ -604,7 +513,7 @@ export const mockData: Record<string, DataEntity[]> = {
       'Closed'
     ),
   ],
-  'brochure-downloads': [
+  downloads: [
     download('D-901', 'Polyrib Master Product Catalogue', 'Mecpro Conveyors', 'Gujarat', 438),
     download('D-902', 'Ripla Cutting Boards Catalogue', 'Apex Food Systems', 'Uttar Pradesh', 267),
     download('D-903', 'Arete Lining Materials Catalogue', 'Eastern Minerals', 'Odisha', 219),
@@ -633,7 +542,7 @@ export const mockData: Record<string, DataEntity[]> = {
       'Closed'
     ),
   ],
-  'quote-requests': [
+  enquiries: [
     request(
       'QR-1101',
       'PCCLEAR roofing sheet enquiry',

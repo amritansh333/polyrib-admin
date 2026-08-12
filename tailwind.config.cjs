@@ -43,8 +43,8 @@ module.exports = {
           600: '#0078d9',
           700: '#005c9f',
           800: '#004274',
-          900: '#00294b'
-        }
+          900: '#00294b',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -65,7 +65,7 @@ module.exports = {
       animation: {
         shimmer: 'shimmer 1.6s linear infinite',
       },
-    }
+    },
   },
-  plugins: []
-}
+  plugins: [],
+};

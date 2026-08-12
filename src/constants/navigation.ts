@@ -1,6 +1,6 @@
 import {
   BookOpen,
-  Boxes,
+  Building2,
   FileDown,
   FileText,
   FolderTree,
@@ -12,11 +12,9 @@ import {
   Package,
   PenTool,
   ScrollText,
-  Settings,
   Tags,
   UserCog,
   Users,
-  Wrench,
 } from 'lucide-react';
 
 export type SidebarItem = {
@@ -40,38 +38,30 @@ export const sidebarSections: SidebarSection[] = [
     label: 'Catalog',
     items: [
       { label: 'Products', to: '/products', icon: Package },
-      { label: 'Categories', to: '/categories', icon: FolderTree },
       { label: 'Brands', to: '/brands', icon: Tags },
-      { label: 'Machine Components', to: '/machine-components', icon: Wrench },
-      { label: 'Semi Finished Products', to: '/semi-finished-products', icon: Boxes },
+      { label: 'Categories', to: '/categories', icon: FolderTree },
+      { label: 'Subcategories', to: '/subcategories', icon: FolderTree },
       { label: 'Materials', to: '/materials', icon: Layers },
+      { label: 'Industries', to: '/industries', icon: Building2 },
       { label: 'Media Library', to: '/media-library', icon: Image },
     ],
   },
   {
     label: 'Leads',
     items: [
-      { label: 'Leads', to: '/leads', icon: Users },
-      { label: 'Brochure Downloads', to: '/brochure-downloads', icon: FileDown },
+      { label: 'Leads', to: '/leads', icon: FileDown },
+      { label: 'Enquiries', to: '/enquiries', icon: FileText },
       { label: 'Drawing Requests', to: '/drawing-requests', icon: PenTool },
-      { label: 'Quote Requests', to: '/quote-requests', icon: FileText },
+      { label: 'Catalog Requests', to: '/catalogrequests', icon: FileText },
     ],
   },
   {
     label: 'Administration',
     items: [
+      { label: 'Blog & Gallery', to: '/blog', icon: ScrollText },
       { label: 'Website Content', to: '/content', icon: BookOpen },
       { label: 'Users', to: '/users', icon: UserCog },
       { label: 'Roles & Permissions', to: '/roles', icon: LockKeyhole },
-      {
-        label: 'Settings',
-        to: '/settings',
-        icon: Settings,
-        children: [
-          { label: 'System Logs', to: '/system-logs', icon: ScrollText },
-          { label: 'Support', to: '/support', icon: HelpCircle },
-        ],
-      },
     ],
   },
 ];

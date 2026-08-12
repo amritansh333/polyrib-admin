@@ -36,19 +36,21 @@ import EmptyState from '../components/EmptyState';
 import { useToast } from '../providers/ToastProvider';
 import { resources } from '../services/mockData';
 import { downloadCsv } from '../utils/csv';
+import { useRepository } from '../repositories/RepositoryProvider';
 import type { DataEntity, ResourceConfig } from '../types/admin';
 import useDashboardData from '../hooks/useDashboardData';
 
 const kpiPaths = [
   '/products',
   '/categories',
+  '/subcategories',
   '/brands',
   '/materials',
-  '/machine-components',
+  '/industries',
   '/leads',
-  '/brochure-downloads',
+  '/enquiries',
   '/drawing-requests',
-  '/quote-requests',
+  '/blog',
   '/media-library',
   '/users',
   '/roles',
@@ -57,6 +59,7 @@ const kpiPaths = [
 export default function HomePage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const repository = useRepository();
   const [query, setQuery] = React.useState('');
   const [division, setDivision] = React.useState('all');
   const [period, setPeriod] = React.useState('today');
@@ -68,21 +71,39 @@ export default function HomePage() {
     status,
   });
 
-  const kpis = React.useMemo(
-    () =>
-      kpiPaths
-        .map((path) => resources.find((resource) => resource.basePath === path))
-        .filter((resource): resource is ResourceConfig => Boolean(resource))
-        .map((resource) => ({
-          label: resource.title,
-          value: String(counts[resource.key] ?? 0),
-          detail: `${resource.eyebrow} records`,
-          icon: <resource.icon className="h-5 w-5" />,
-          to: resource.basePath,
-          tone: ['leads', 'users'].includes(resource.key) ? ('green' as const) : ('blue' as const),
-        })),
-    [counts]
-  );
+  const kpis = React.useMemo(() => {
+    const baseKpis = kpiPaths
+      .map((path) => resources.find((resource) => resource.basePath === path))
+      .filter((resource): resource is ResourceConfig => Boolean(resource))
+      .map((resource) => ({
+        label: resource.title,
+        value: String(counts[resource.key] ?? 0),
+        detail: `${resource.eyebrow} records`,
+        icon: <resource.icon className="h-5 w-5" />,
+        to: resource.basePath,
+        tone: ['leads', 'users'].includes(resource.key) ? ('green' as const) : ('blue' as const),
+      }));
+
+    const catalogRequestsCard = {
+      label: 'Catalog Requests',
+      value: String(counts.catalogrequests ?? counts['catalogrequests'] ?? 0),
+      detail: 'Sales requests',
+      icon: <FileText className="h-5 w-5" />,
+      to: '/catalogrequests',
+      tone: 'blue' as const,
+    };
+
+    const insertIndex = baseKpis.findIndex((item) => item.to === '/drawing-requests');
+    if (insertIndex >= 0) {
+      return [
+        ...baseKpis.slice(0, insertIndex + 1),
+        catalogRequestsCard,
+        ...baseKpis.slice(insertIndex + 1),
+      ];
+    }
+
+    return [...baseKpis, catalogRequestsCard];
+  }, [counts]);
 
   const combinedRows = [...products, ...leads, ...downloads, ...materials];
 
@@ -118,7 +139,9 @@ export default function HomePage() {
         meta={
           <>
             <StatusBadge tone="green">Website Live</StatusBadge>
-            <StatusBadge tone="blue">Mock Repository</StatusBadge>
+            <StatusBadge tone={repository.source === 'api' ? 'green' : 'blue'}>
+              {repository.source === 'api' ? 'API Repository' : 'Mock Repository'}
+            </StatusBadge>
             <StatusBadge tone="neutral">Updated 2026-08-04</StatusBadge>
           </>
         }
@@ -135,11 +158,7 @@ export default function HomePage() {
             aria-label="Division"
             value={division}
             onChange={(event) => setDivision(event.target.value)}
-            options={[
-              { label: 'All divisions', value: 'all' },
-              { label: 'Semi finished', value: 'semi' },
-              { label: 'Machine components', value: 'machine' },
-            ]}
+            options={[{ label: 'All divisions', value: 'all' }]}
           />
           <Select
             aria-label="Period"
@@ -168,7 +187,7 @@ export default function HomePage() {
             <StatCard
               key={item.to}
               label={item.label}
-              value={loading ? '...' : item.value}
+              value={item.value}
               detail={item.detail}
               icon={item.icon}
               tone={item.tone}
@@ -187,7 +206,10 @@ export default function HomePage() {
             <ActivityItem
               title={products[0]?.name ?? 'Catalog record refreshed'}
               description={
-                products[0]?.description ?? 'Product data is loaded from the mock repository.'
+                products[0]?.description ??
+                (repository.source === 'api'
+                  ? 'Product data is loaded from the backend API.'
+                  : 'Product data is loaded from the mock repository.')
               }
               time="Today"
               icon={<Package className="h-4 w-4" />}
@@ -195,14 +217,24 @@ export default function HomePage() {
             />
             <ActivityItem
               title={leads[0]?.company ?? leads[0]?.name ?? 'Lead queue reviewed'}
-              description={leads[0]?.description ?? 'Commercial records are available for review.'}
+              description={
+                leads[0]?.description ??
+                (repository.source === 'api'
+                  ? 'Commercial records are available from the backend API.'
+                  : 'Commercial records are available for review.')
+              }
               time="Today"
               icon={<ClipboardList className="h-4 w-4" />}
               status="Leads"
             />
             <ActivityItem
               title={downloads[0]?.name ?? 'Download record available'}
-              description={downloads[0]?.description ?? 'Brochure activity is ready for export.'}
+              description={
+                downloads[0]?.description ??
+                (repository.source === 'api'
+                  ? 'Brochure activity is ready for export from the backend API.'
+                  : 'Brochure activity is ready for export.')
+              }
               time="Today"
               icon={<Archive className="h-4 w-4" />}
               status="Media"
@@ -240,8 +272,8 @@ export default function HomePage() {
               columns={downloadColumns}
               loading={loading}
               pageSize={4}
-              onView={(row) => navigate(`/brochure-downloads/${row.id}`)}
-              onEdit={(row) => navigate(`/brochure-downloads/${row.id}/edit`)}
+              onView={(row) => navigate(`/leads/${row.id}`)}
+              onEdit={(row) => navigate(`/leads/${row.id}/edit`)}
             />
           </DashboardCard>
 
@@ -291,10 +323,10 @@ export default function HomePage() {
                 onClick={() => navigate('/media-library/upload')}
               />
               <QuickActionCard
-                title="Review quote queue"
-                description="Triage pending industrial enquiries."
+                title="Review enquiries"
+                description="Triage pending customer enquiries."
                 icon={<ClipboardList className="h-4 w-4" />}
-                onClick={() => navigate('/quote-requests')}
+                onClick={() => navigate('/enquiries')}
               />
             </div>
           </DashboardCard>
@@ -354,7 +386,11 @@ export default function HomePage() {
             ) : (
               <EmptyState
                 title="No escalation alerts"
-                description="Critical website, admin, and mock repository checks are currently clear."
+                description={
+                  repository.source === 'api'
+                    ? 'Critical website, admin, and backend repository checks are currently clear.'
+                    : 'Critical website, admin, and mock repository checks are currently clear.'
+                }
                 icon={<ShieldCheck className="h-5 w-5" />}
               />
             )}
