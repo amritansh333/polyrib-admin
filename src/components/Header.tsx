@@ -15,7 +15,6 @@ import {
   Menu,
   PackagePlus,
   PenTool,
-  Settings,
   User,
 } from 'lucide-react';
 
@@ -192,7 +191,6 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
                 title="System check complete"
                 description="Website, storage, and database services are healthy."
                 time="1h"
-                icon={<Settings className="h-4 w-4" />}
               />
             </div>
           )}
@@ -234,13 +232,10 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
               <button
                 type="button"
                 onClick={() => {
-                  navigate('/settings');
                   setProfileOpen(false);
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-charcoal-light hover:bg-surface-subtle hover:text-primary"
               >
-                <Settings className="h-4 w-4" />
-                Account Settings
               </button>
               <button
                 type="button"

@@ -29,12 +29,21 @@ import IndustryFormPage from '../pages/IndustryFormPage';
 import DrawingRequestListPage from '../pages/DrawingRequestListPage';
 import DrawingRequestDetailPage from '../pages/DrawingRequestDetailPage';
 import DrawingRequestFormPage from '../pages/DrawingRequestFormPage';
+import CatalogRequestListPage from '../pages/CatalogRequestListPage';
+import CatalogRequestDetailPage from '../pages/CatalogRequestDetailPage';
+import CatalogRequestFormPage from '../pages/CatalogRequestFormPage';
 import BrandListPage from '../pages/BrandListPage';
 import BrandDetailPage from '../pages/BrandDetailPage';
 import BrandFormPage from '../pages/BrandFormPage';
 import CategoryListPage from '../pages/CategoryListPage';
 import CategoryDetailPage from '../pages/CategoryDetailPage';
 import CategoryFormPage from '../pages/CategoryFormPage';
+import ProductListPage from '../pages/ProductListPage';
+import ProductDetailPage from '../pages/ProductDetailPage';
+import ProductFormPage from '../pages/ProductFormPage';
+import SubcategoryListPage from '../pages/SubcategoryListPage';
+import SubcategoryDetailPage from '../pages/SubcategoryDetailPage';
+import SubcategoryFormPage from '../pages/SubcategoryFormPage';
 import { resources } from '../services/mockData';
 import type { ResourceConfig } from '../types/admin';
 
@@ -48,6 +57,22 @@ export default function AppRouter() {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
       <Route path="/dashboard" element={withAdmin(<HomePage />)} />
+      <Route path="/catalogrequests" element={withAdmin(<CatalogRequestListPage />)} />
+      <Route
+        key="/catalogrequests/new"
+        path="/catalogrequests/new"
+        element={withAdmin(<CatalogRequestFormPage mode="create" />)}
+      />
+      <Route
+        key="/catalogrequests/:id"
+        path="/catalogrequests/:id"
+        element={withAdmin(<CatalogRequestDetailPage />)}
+      />
+      <Route
+        key="/catalogrequests/:id/edit"
+        path="/catalogrequests/:id/edit"
+        element={withAdmin(<CatalogRequestFormPage mode="edit" />)}
+      />
       {resources.flatMap((config) => resourceRoutes(config))}
 
       <Route path="/404" element={<NotFoundPage />} />
@@ -217,6 +242,24 @@ function resourceRoutes(config: ResourceConfig) {
         path="/categories/:id/edit"
         element={withAdmin(<CategoryFormPage mode="edit" />)}
       />,
+    ];
+  }
+
+  if (config.key === 'products') {
+    return [
+      <Route key={config.basePath} path={config.basePath} element={withAdmin(<ProductListPage />)} />,
+      <Route key="/products/new" path="/products/new" element={withAdmin(<ProductFormPage mode="create" />)} />,
+      <Route key="/products/:id" path="/products/:id" element={withAdmin(<ProductDetailPage />)} />,
+      <Route key="/products/:id/edit" path="/products/:id/edit" element={withAdmin(<ProductFormPage mode="edit" />)} />,
+    ];
+  }
+
+  if (config.key === 'subcategories') {
+    return [
+      <Route key={config.basePath} path={config.basePath} element={withAdmin(<SubcategoryListPage />)} />,
+      <Route key="/subcategories/new" path="/subcategories/new" element={withAdmin(<SubcategoryFormPage mode="create" />)} />,
+      <Route key="/subcategories/:id" path="/subcategories/:id" element={withAdmin(<SubcategoryDetailPage />)} />,
+      <Route key="/subcategories/:id/edit" path="/subcategories/:id/edit" element={withAdmin(<SubcategoryFormPage mode="edit" />)} />,
     ];
   }
 

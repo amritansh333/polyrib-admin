@@ -36,12 +36,25 @@ export type DataEntity = {
   updatedAt: string;
   createdAt: string;
   category?: string;
+  categoryId?: string;
+  categoryName?: string;
   brand?: string;
+  brandId?: string;
   material?: string;
+  materialIds?: string[];
+  industries?: Array<string | { id?: string; name?: string; slug?: string }>;
+  industryIds?: string[];
   materials?: Array<string | { id?: string; name?: string; slug?: string }>;
   source?: string;
   slug?: string;
   experience?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  technicalCharacteristics?: string[];
+  applications?: string[];
+  specifications?: Record<string, unknown>;
+  downloads?: number;
+  downloadRecords?: Array<{ label?: string; url?: string }>;
   // Backend models often provide ordering and visibility flags
   order?: number;
   isVisible?: boolean;
@@ -57,7 +70,6 @@ export type DataEntity = {
   image?: string;
   file?: string;
   files?: DrawingRequestFile[];
-  downloads?: number;
   seo?: {
     metaTitle?: string;
     metaDescription?: string;

@@ -17,6 +17,7 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
   const brand = toReferenceName(dto.brand);
   const material = toReferenceList(dto.materials).join(', ') || dto.material;
   const category = toReferenceName(dto.category) || toReferenceName(dto.subCategory);
+  const subCategoryName = toReferenceName(dto.subCategory);
   const description = Array.isArray(dto.description)
     ? dto.description.join(' ')
     : String(dto.description ?? '');
@@ -33,6 +34,15 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
     dto.title ??
     '';
 
+  const categoryId = toReferenceId(dto.category);
+  const subCategoryId = toReferenceId(dto.subCategory);
+  const brandId = toReferenceId(dto.brand);
+  const materialIds = Array.isArray(dto.materials)
+    ? dto.materials.map(toReferenceId).filter(Boolean)
+    : undefined;
+  const industryIds = Array.isArray(dto.industries)
+    ? dto.industries.map(toReferenceId).filter(Boolean)
+    : undefined;
   const entity: any = {
     ...dto,
     id,
@@ -44,8 +54,15 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
     updatedAt: normalizeDate(dto.updatedAt ?? dto.updated_at),
     createdAt: normalizeDate(dto.createdAt ?? dto.created_at),
     category,
+    categoryName: category,
+    categoryId,
+    subCategoryName,
+    subCategoryId,
     brand,
+    brandId,
     material,
+    materialIds,
+    industryIds,
     source: dto.path ?? dto.slug,
     slug: dto.slug,
     size: image,
@@ -55,13 +72,14 @@ export function toDataEntity(dto: BackendEntityDto): DataEntity {
       metaDescription: '',
       keywords: [],
     },
-    // Normalize downloads: prefer numeric downloadCount (Lead) then array length or downloads field
+    // Normalize downloads for list-count semantics, preserve raw download records for detail pages
     downloads:
       dto.downloadCount !== undefined
         ? dto.downloadCount
         : Array.isArray(dto.downloads)
           ? dto.downloads.length
           : dto.downloads,
+    downloadRecords: Array.isArray(dto.downloads) ? dto.downloads : undefined,
   };
 
   // Map Lead-specific fields when present
@@ -147,10 +165,13 @@ export function toProductFilterResult(
 }
 
 export function toProductDetail(dto: BackendProductDetailDto): DataEntity {
-  return toDataEntity({
-    ...dto.product,
-    brand: dto.product.brand ?? dto.brand ?? undefined,
-  });
+  return {
+    ...toDataEntity({
+      ...dto.product,
+      brand: dto.product.brand ?? dto.brand ?? undefined,
+    }),
+    enquiries: dto.enquiries,
+  } as any;
 }
 
 export function toBrandRows(dtos: BackendBrandBySubcategoryDto[]): BackendEntityDto[] {
@@ -213,6 +234,11 @@ function applyClientSorting(rows: DataEntity[], params: ResourceListParams) {
 function toReferenceName(value: string | BackendReferenceDto | null | undefined) {
   if (!value) return undefined;
   return typeof value === 'string' ? value : value.name;
+}
+
+function toReferenceId(value: string | BackendReferenceDto | null | undefined) {
+  if (!value) return undefined;
+  return typeof value === 'string' ? value : String(value.id ?? value._id ?? value);
 }
 
 function toReferenceList(values: Array<string | BackendReferenceDto> | undefined) {

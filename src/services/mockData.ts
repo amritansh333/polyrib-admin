@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  Boxes,
   Building2,
   FileDown,
   FileText,
@@ -12,11 +11,8 @@ import {
   Package,
   PenTool,
   ScrollText,
-  Settings,
   Tags,
   UserCog,
-  Users,
-  Wrench,
 } from 'lucide-react';
 import type { DataEntity, ResourceConfig } from '../types/admin';
 
@@ -114,34 +110,6 @@ export const resources: ResourceConfig[] = [
       { label: 'All materials', value: 'all' },
       { label: 'Published', value: 'Published' },
       { label: 'Review', value: 'Review' },
-    ],
-  },
-  {
-    key: 'machine-components',
-    title: 'Machine Components',
-    eyebrow: 'Product Division',
-    description: 'Manage machined, formed, and application-ready industrial components.',
-    basePath: '/machine-components',
-    searchPlaceholder: 'Search machine components...',
-    icon: Wrench,
-    filters: [
-      { label: 'All components', value: 'all' },
-      { label: 'Published', value: 'Published' },
-      { label: 'Review', value: 'Review' },
-    ],
-  },
-  {
-    key: 'semi-finished-products',
-    title: 'Semi Finished Products',
-    eyebrow: 'Product Division',
-    description: 'Manage sheet, block, rod, tube, coil, roll, and welding rod records.',
-    basePath: '/semi-finished-products',
-    searchPlaceholder: 'Search semi finished products...',
-    icon: Boxes,
-    filters: [
-      { label: 'All products', value: 'all' },
-      { label: 'Published', value: 'Published' },
-      { label: 'Draft', value: 'Draft' },
     ],
   },
   {
@@ -264,19 +232,6 @@ export const resources: ResourceConfig[] = [
     icon: LockKeyhole,
     filters: [
       { label: 'All roles', value: 'all' },
-      { label: 'Active', value: 'Active' },
-    ],
-  },
-  {
-    key: 'settings',
-    title: 'Settings',
-    eyebrow: 'System',
-    description: 'Configure admin preferences, notifications, publishing, and security controls.',
-    basePath: '/settings',
-    searchPlaceholder: 'Search settings...',
-    icon: Settings,
-    filters: [
-      { label: 'All settings', value: 'all' },
       { label: 'Active', value: 'Active' },
     ],
   },
@@ -488,90 +443,6 @@ export const mockData: Record<string, DataEntity[]> = {
       'Polyamide',
       'KAYLON',
       'PA6'
-    ),
-  ],
-  'machine-components': [
-    entity(
-      'MC-501',
-      'RIPLA Cutting Board',
-      'Impact resistant industrial cutting board for food processing.',
-      'Published',
-      'Machine Components',
-      'Cutting Boards',
-      'RIPLA',
-      'PP'
-    ),
-    entity(
-      'MC-502',
-      'Chain Guide Profile',
-      'Machined UHMW PE guide profile for conveyors.',
-      'Review',
-      'Engineering',
-      'Strips & Profiles',
-      'POLYRIB V',
-      'UHMW PE'
-    ),
-    entity(
-      'MC-503',
-      'Vacuum Formed Plastic Part',
-      'Custom formed thermoplastic housing for industrial equipment.',
-      'Published',
-      'Engineering',
-      'Vacuum Formed Parts',
-      'POLYRIB H',
-      'HDPE'
-    ),
-    entity(
-      'MC-504',
-      'ARETE Hopper Liner',
-      'Low-friction liner component for high volume discharge.',
-      'Published',
-      'Machine Components',
-      'Liners',
-      'ARETE',
-      'UHMW PE'
-    ),
-  ],
-  'semi-finished-products': [
-    entity(
-      'SF-601',
-      'Compression Moulded Sheet',
-      'Heavy gauge sheet stock for machining and fabrication.',
-      'Published',
-      'Catalog Team',
-      'Sheets & Blocks',
-      'POLYRIB V',
-      'UHMW PE'
-    ),
-    entity(
-      'SF-602',
-      'Extruded HDPE Rod',
-      'Standard diameter HDPE rod for industrial fabrication.',
-      'Published',
-      'Catalog Team',
-      'Rods & Tubes',
-      'POLYRIB H',
-      'HDPE'
-    ),
-    entity(
-      'SF-603',
-      'Polypropylene Welding Rod',
-      'PP welding rod for tank fabrication and repair.',
-      'Draft',
-      'Catalog Team',
-      'Welding Rods',
-      'POLYRIB P',
-      'PP'
-    ),
-    entity(
-      'SF-604',
-      'Polycarbonate Roll',
-      'Roll stock for glazing and formed applications.',
-      'Review',
-      'Catalog Team',
-      'Coils & Rolls',
-      'PCCLEAR',
-      'PC'
     ),
   ],
   'media-library': [

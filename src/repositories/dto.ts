@@ -100,6 +100,7 @@ export type BackendProductFilterDto = {
 export type BackendProductDetailDto = {
   brand?: BackendEntityDto | null;
   product: BackendEntityDto;
+  enquiries?: BackendEntityDto[];
 };
 
 export type BackendMaterialDetailDto = {

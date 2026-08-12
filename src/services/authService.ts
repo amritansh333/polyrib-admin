@@ -1,38 +1,38 @@
 import type { Permission, UserProfile } from '../auth/types';
-import { MissingBackendApiError } from '../lib/api';
-import type { AuthTokenDto } from '../repositories/dto';
+import api from '../lib/api';
 
 export type AuthSession = {
   user: UserProfile;
-  tokens: AuthTokenDto;
 };
 
 export type AuthService = {
-  login(email: string, password: string, remember?: boolean): Promise<AuthSession>;
+  login(email: string, password: string, remember?: boolean): Promise<AuthSession | null>;
   logout(): Promise<void>;
-  refreshToken(refreshToken: string): Promise<AuthTokenDto>;
-  getCurrentUser(): Promise<UserProfile>;
+  getCurrentUser(): Promise<UserProfile | null>;
   loadPermissions(): Promise<Permission[]>;
 };
 
 export const authService: AuthService = {
-  async login(_email, _password, _remember) {
-    throw new MissingBackendApiError('login', 'auth');
+  async login(email, password, remember = false) {
+    const response = await api.post('/admin/auth/login', { email, password, remember });
+    if (response && response.data && response.data.success) {
+      return { user: response.data.data.user };
+    }
+    return null;
   },
 
   async logout() {
-    throw new MissingBackendApiError('logout', 'auth');
-  },
-
-  async refreshToken(_refreshToken) {
-    throw new MissingBackendApiError('refreshToken', 'auth');
+    await api.post('/admin/auth/logout');
   },
 
   async getCurrentUser() {
-    throw new MissingBackendApiError('getCurrentUser', 'auth');
+    const response = await api.get('/admin/auth/me');
+    if (response && response.data && response.data.success) return response.data.data;
+    return null;
   },
 
   async loadPermissions() {
-    throw new MissingBackendApiError('loadPermissions', 'auth');
+    // permissions are fetched via roles for the current user on demand; frontend uses stored user.role
+    return [] as Permission[];
   },
 };

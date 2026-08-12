@@ -45,8 +45,6 @@ const kpiPaths = [
   '/categories',
   '/subcategories',
   '/brands',
-  '/semi-finished-products',
-  '/machine-components',
   '/materials',
   '/industries',
   '/leads',
@@ -73,21 +71,39 @@ export default function HomePage() {
     status,
   });
 
-  const kpis = React.useMemo(
-    () =>
-      kpiPaths
-        .map((path) => resources.find((resource) => resource.basePath === path))
-        .filter((resource): resource is ResourceConfig => Boolean(resource))
-        .map((resource) => ({
-          label: resource.title,
-          value: String(counts[resource.key] ?? 0),
-          detail: `${resource.eyebrow} records`,
-          icon: <resource.icon className="h-5 w-5" />,
-          to: resource.basePath,
-          tone: ['leads', 'users'].includes(resource.key) ? ('green' as const) : ('blue' as const),
-        })),
-    [counts]
-  );
+  const kpis = React.useMemo(() => {
+    const baseKpis = kpiPaths
+      .map((path) => resources.find((resource) => resource.basePath === path))
+      .filter((resource): resource is ResourceConfig => Boolean(resource))
+      .map((resource) => ({
+        label: resource.title,
+        value: String(counts[resource.key] ?? 0),
+        detail: `${resource.eyebrow} records`,
+        icon: <resource.icon className="h-5 w-5" />,
+        to: resource.basePath,
+        tone: ['leads', 'users'].includes(resource.key) ? ('green' as const) : ('blue' as const),
+      }));
+
+    const catalogRequestsCard = {
+      label: 'Catalog Requests',
+      value: String(counts.catalogrequests ?? counts['catalogrequests'] ?? 0),
+      detail: 'Sales requests',
+      icon: <FileText className="h-5 w-5" />,
+      to: '/catalogrequests',
+      tone: 'blue' as const,
+    };
+
+    const insertIndex = baseKpis.findIndex((item) => item.to === '/drawing-requests');
+    if (insertIndex >= 0) {
+      return [
+        ...baseKpis.slice(0, insertIndex + 1),
+        catalogRequestsCard,
+        ...baseKpis.slice(insertIndex + 1),
+      ];
+    }
+
+    return [...baseKpis, catalogRequestsCard];
+  }, [counts]);
 
   const combinedRows = [...products, ...leads, ...downloads, ...materials];
 
@@ -142,11 +158,7 @@ export default function HomePage() {
             aria-label="Division"
             value={division}
             onChange={(event) => setDivision(event.target.value)}
-            options={[
-              { label: 'All divisions', value: 'all' },
-              { label: 'Semi finished', value: 'semi' },
-              { label: 'Machine components', value: 'machine' },
-            ]}
+            options={[{ label: 'All divisions', value: 'all' }]}
           />
           <Select
             aria-label="Period"

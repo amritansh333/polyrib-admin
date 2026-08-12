@@ -222,7 +222,6 @@ function restoreStatus(resourceKey: string): DataEntity['status'] {
       'leads',
       'users',
       'roles',
-      'settings',
       'system-logs',
       'support',
     ].includes(resourceKey)

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { UserProfile } from './types';
-import * as mock from './mockAuth';
+import { authService } from '../services/authService';
 
 const STORAGE_KEY = 'polyrib_admin_auth_user_v1';
 
@@ -29,10 +29,13 @@ export const useAuthStore = create<AuthState>((set: SetFn, get) => ({
     if (get().initialized) return;
     set({ loading: true });
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const u = JSON.parse(raw) as UserProfile;
-        set({ user: u, remember: true });
+      // try to fetch current user from backend
+      const resp = await authService.getCurrentUser();
+      if (resp) {
+        set({ user: resp, remember: true });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(resp));
+        } catch {}
       }
     } catch {
       // ignore
@@ -43,15 +46,12 @@ export const useAuthStore = create<AuthState>((set: SetFn, get) => ({
   login: async (email: string, password: string, remember = false) => {
     set({ loading: true });
     try {
-      const user = await mock.authenticate(email, password);
-      if (user) {
-        set({ user, remember });
+      const session = await authService.login(email, password, remember);
+      if (session && session.user) {
+        set({ user: session.user, remember });
         try {
-          // Persist authenticated user so session survives refresh regardless of "remember" checkbox.
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-        } catch {
-          // ignore storage errors
-        }
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(session.user));
+        } catch {}
         return true;
       }
       return false;
@@ -64,12 +64,15 @@ export const useAuthStore = create<AuthState>((set: SetFn, get) => ({
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
+    try {
+      authService.logout();
+    } catch {}
   },
   sendReset: async (email: string) => {
     set({ loading: true });
     try {
-      const ok = await mock.sendResetEmail(email);
-      return ok;
+      // Not implemented on backend
+      return false;
     } finally {
       set({ loading: false });
     }
@@ -77,8 +80,8 @@ export const useAuthStore = create<AuthState>((set: SetFn, get) => ({
   resetPassword: async (token: string, newPassword: string) => {
     set({ loading: true });
     try {
-      const ok = await mock.resetPassword(token, newPassword);
-      return ok;
+      // Not implemented on backend
+      return false;
     } finally {
       set({ loading: false });
     }

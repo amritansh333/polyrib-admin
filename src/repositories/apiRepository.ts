@@ -1,11 +1,6 @@
 import api, { MissingBackendApiError, missingAdminApis } from '../lib/api';
 import type { BackendEntityDto, BackendMaterialDetailDto, BackendProductDetailDto } from './dto';
-import {
-  toDataEntity,
-  toMachineComponentRows,
-  toProductDetail,
-  toSearchResultsByResource,
-} from './transformers';
+import { toDataEntity, toProductDetail, toSearchResultsByResource } from './transformers';
 import type { ResourceListParams, ResourceRepository } from './types';
 
 type AdminResponse<T> = {
@@ -25,16 +20,14 @@ const connectedResources = new Set([
   'categories',
   'brands',
   'materials',
-  'machine-components',
-  'semi-finished-products',
   'content',
   'roles',
-  'settings',
   'subcategories',
   'system-logs',
   'blog',
   'drawing-requests',
   'industries',
+  'catalogrequests',
 ]);
 
 const bulkDeleteResources = new Set([
@@ -44,7 +37,6 @@ const bulkDeleteResources = new Set([
   'materials',
   'products',
   'roles',
-  'settings',
 ]);
 
 export const apiRepository: ResourceRepository = {
@@ -54,16 +46,12 @@ export const apiRepository: ResourceRepository = {
     switch (resourceKey) {
       case 'products':
         return listProducts(params);
-      case 'semi-finished-products':
-        return listProducts({ ...params, experience: 'semi_finished' });
       case 'categories':
       case 'subcategories':
       case 'brands':
       case 'materials':
-      case 'machine-components':
       case 'content':
       case 'roles':
-      case 'settings':
       case 'system-logs':
       case 'blog':
       case 'industries':
@@ -90,13 +78,12 @@ export const apiRepository: ResourceRepository = {
       case 'categories':
       case 'brands':
       case 'materials':
-      case 'machine-components':
       case 'content':
       case 'roles':
-      case 'settings':
       case 'system-logs':
       case 'blog':
       case 'industries':
+      case 'catalogrequests':
       case 'enquiries':
       case 'leads':
       case 'drawing-requests':
@@ -115,10 +102,8 @@ export const apiRepository: ResourceRepository = {
       case 'subcategories':
       case 'brands':
       case 'materials':
-      case 'machine-components':
       case 'content':
       case 'roles':
-      case 'settings':
       case 'blog':
       case 'industries':
         return adminCreateResource(resourceKey, entity);
@@ -134,10 +119,8 @@ export const apiRepository: ResourceRepository = {
       case 'subcategories':
       case 'brands':
       case 'materials':
-      case 'machine-components':
       case 'content':
       case 'roles':
-      case 'settings':
       case 'blog':
       case 'industries':
         return adminUpdateResource(resourceKey, id, entity);
@@ -163,10 +146,8 @@ export const apiRepository: ResourceRepository = {
       case 'subcategories':
       case 'brands':
       case 'materials':
-      case 'machine-components':
       case 'content':
       case 'roles':
-      case 'settings':
       case 'blog':
       case 'system-logs':
       case 'industries':
@@ -385,14 +366,3 @@ async function listBrands(params: ResourceListParams) {
   return toAdminListResult(response.data.data ?? [], params, response.data.pagination);
 }
 
-async function listMachineComponents(params: ResourceListParams) {
-  const response = await api.get<AdminResponse<BackendEntityDto[]>>('/admin/machine-components', {
-    params: toAdminQueryParams(params),
-  });
-
-  return toAdminListResult(response.data.data ?? [], params, response.data.pagination);
-}
-
-async function getMachineComponent(id: string) {
-  return adminGetResource('machine-components', id);
-}

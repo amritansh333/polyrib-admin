@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  Boxes,
   Building2,
   FileDown,
   FileText,
@@ -13,11 +12,9 @@ import {
   Package,
   PenTool,
   ScrollText,
-  Settings,
   Tags,
   UserCog,
   Users,
-  Wrench,
 } from 'lucide-react';
 
 export type SidebarItem = {
@@ -44,8 +41,6 @@ export const sidebarSections: SidebarSection[] = [
       { label: 'Brands', to: '/brands', icon: Tags },
       { label: 'Categories', to: '/categories', icon: FolderTree },
       { label: 'Subcategories', to: '/subcategories', icon: FolderTree },
-      { label: 'Semi Finished Products', to: '/semi-finished-products', icon: Boxes },
-      { label: 'Machine Components', to: '/machine-components', icon: Wrench },
       { label: 'Materials', to: '/materials', icon: Layers },
       { label: 'Industries', to: '/industries', icon: Building2 },
       { label: 'Media Library', to: '/media-library', icon: Image },
@@ -57,6 +52,7 @@ export const sidebarSections: SidebarSection[] = [
       { label: 'Leads', to: '/leads', icon: FileDown },
       { label: 'Enquiries', to: '/enquiries', icon: FileText },
       { label: 'Drawing Requests', to: '/drawing-requests', icon: PenTool },
+      { label: 'Catalog Requests', to: '/catalogrequests', icon: FileText },
     ],
   },
   {
@@ -66,15 +62,6 @@ export const sidebarSections: SidebarSection[] = [
       { label: 'Website Content', to: '/content', icon: BookOpen },
       { label: 'Users', to: '/users', icon: UserCog },
       { label: 'Roles & Permissions', to: '/roles', icon: LockKeyhole },
-      {
-        label: 'Settings',
-        to: '/settings',
-        icon: Settings,
-        children: [
-          { label: 'System Logs', to: '/system-logs', icon: ScrollText },
-          { label: 'Support', to: '/support', icon: HelpCircle },
-        ],
-      },
     ],
   },
 ];

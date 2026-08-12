@@ -79,10 +79,6 @@ export default function ResourceFormPage({
         updatedAt: '2026-08-04',
       };
 
-      if (!entity.slug && ['machine-components'].includes(config.key)) {
-        entity.slug = slugify(entity.name);
-      }
-
       if (values.image instanceof File) {
         const asset = await uploadService.uploadImage(values.image, { resourceKey: config.key });
         (entity as DataEntity & { image?: string }).image = asset.url;
@@ -236,14 +232,6 @@ function getFields(config: ResourceConfig): FormFieldConfig[] {
       { name: 'file', label: 'Technical File', type: 'file' },
     ]
   );
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }
 
 function createInitialValues(config: ResourceConfig): FormValues {
