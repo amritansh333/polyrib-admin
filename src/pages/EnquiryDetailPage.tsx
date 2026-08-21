@@ -21,6 +21,7 @@ const ENQUIRY_STATUS_OPTIONS = [
   { label: 'Closed', value: 'Closed' },
 ];
 
+
 export default function EnquiryDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
