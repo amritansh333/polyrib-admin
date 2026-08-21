@@ -14,6 +14,7 @@ import { useToast } from '../providers/ToastProvider';
 import { resources } from '../services/mockData';
 import type { DataEntity } from '../types/admin';
 
+
 export default function BrandListPage() {
   const navigate = useNavigate();
   const toast = useToast();
