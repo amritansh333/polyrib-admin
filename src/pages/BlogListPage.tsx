@@ -62,6 +62,7 @@ function BlogListImage({ src, alt }: { src?: string | null; alt: string }) {
   return <img src={imageUrl} alt={alt} className="h-14 w-24 rounded object-cover" loading="lazy" />;
 }
 
+
 export default function BlogListPage() {
   const navigate = useNavigate();
   const toast = useToast();
